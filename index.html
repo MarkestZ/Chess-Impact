@@ -427,7 +427,7 @@ function turnBanner(){document.querySelectorAll('.turn').forEach(e=>e.remove());
 function clearFx(){document.querySelectorAll('.turn').forEach(e=>e.remove());T.forEach(t=>{clearTimeout(t);clearInterval(t)});T.length=0;P=[];document.querySelectorAll('.banner,.pillar,.flash,.ghost').forEach(e=>e.remove())}
 
 /* ---------- Game ---------- */
-const net={on:false,color:'w',peer:null,conn:null};
+const net={on:false,host:false,color:'w',peer:null,conn:null};
 const SQ=[];let S,sel=null,busy=false,hist=[],vs=2,aiTok=0,wp=0,tTok=0,startTurn='w';
 const fresh=()=>({b:['rnbqkbnr','pppppppp',...Array(4).fill(null).map(()=>'        '),'PPPPPPPP','RNBQKBNR'].map(r=>r.split('').map(x=>x==' '?null:x)),st:{cs:'KQkq',ep:null},turn:'w',last:null,capW:[],capB:[],over:false,mate:false,hm:0,pos:[],dr:null});
 for(let r=0;r<8;r++){SQ[r]=[];for(let c=0;c<8;c++){const d=document.createElement('div');d.onclick=()=>click(r,c);boardEl.append(d);SQ[r][c]=d}}
@@ -487,21 +487,36 @@ function aiTurn(delay){busy=true;const tok=aiTok;$('turn').querySelector('span')
  setTimeout(()=>{if(tok!=aiTok)return;think(vs,o=>{if(tok!=aiTok)return;busy=false;exec(o.r,o.c,o.m,'Q')})},delay)}
 
 /* ---------- Online: private room (PeerJS / WebRTC) ---------- */
-const flipped=()=>net.on&&net.color=='b';let rcv=false;
+const flipped=()=>net.on&&net.color=='b';let rcv=false,odTok=0,odIv=0;
 const AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',rcode=()=>Array.from({length:5},()=>AL[Math.random()*AL.length|0]).join('');
 function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);if(ms)toast.t=setTimeout(()=>e.hidden=true,ms)}
-function netClose(){const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
+function netClose(){odTok++;clearInterval(odIv);$('dice').classList.remove('on');const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
 function showO(s,m){$('ohome').hidden=s!='home';$('ocode').hidden=s!='host';$('ojoinbox').hidden=s!='join';
  $('omsg').textContent=m||{home:'สร้างห้องแล้วส่งรหัสให้เพื่อน หรือใส่รหัสห้องของเพื่อน',host:'ส่งรหัสนี้ให้เพื่อน แล้วรอเพื่อนเข้าห้อง…',join:'ใส่รหัสห้อง 5 ตัวอักษร'}[s]||''}
 function openOnline(){netClose();$('menu').classList.remove('on');$('online').classList.add('on');showO('home')}
-function startOnline(color){net.on=true;net.color=color;startTurn='w';wp=0;$('mode').value=0;boardEl.classList.toggle('flip',color=='b');
+function startOnline(color,first){net.on=true;net.color=color;startTurn=first||'w';wp=0;$('mode').value=0;boardEl.classList.toggle('flip',color=='b');
  $('online').classList.remove('on');$('menu').classList.remove('on');newGame();
- toast('คุณเล่นฝ่าย'+(color=='w'?'ขาว ♔ · เดินก่อน':'ดำ ♚ · รอคู่แข่งเดิน'),3500)}
-function rematch(){if(!net.conn)return toast('คู่แข่งออกจากห้องแล้ว — กด "เมนูหลัก"',3500);net.conn.send({t:'again'});startOnline(net.color=='w'?'b':'w')}
+ if(net.conn)toast('คุณเล่นฝ่าย'+(color=='w'?'ขาว ♔':'ดำ ♚')+(first==color?' · เดินก่อน':' · คู่แข่งเดินก่อน'),3500)}
+function rematch(){if(!net.conn)return toast('คู่แข่งออกจากห้องแล้ว — กด "เมนูหลัก"',3500);if(net.host)hostStart(net.color=='w'?'b':'w');else net.conn.send({t:'again'})}
+function hostStart(hc){if(!net.conn)return;let a,b;do{a=d6();b=d6()}while(a==b);
+ net.conn.send({t:'start',you:hc=='w'?'b':'w',d:[a,b]});onlineDice(hc,a,b)}
+function onlineDice(color,mine,opp){const tk=++odTok;clearInterval(odIv);net.on=true;net.color=color;
+ const oc=color=='w'?'b':'w',nm=c=>c=='w'?'ขาว ♔':'ดำ ♚';
+ clearFx();$('online').classList.remove('on');$('menu').classList.remove('on');$('res').classList.remove('on');
+ $('pl1').querySelector('span').textContent='คุณ · '+nm(color);$('pl2').querySelector('span').textContent='คู่แข่ง · '+nm(oc);
+ $('pl1').className=$('pl2').className='pl';$('roll').hidden=$('go').hidden=$('dback').hidden=true;
+ $('dmsg').textContent='กำลังทอย…';$('dice').classList.add('on');face('d1',1);face('d2',1);
+ $('d1').classList.add('roll');$('d2').classList.add('roll');
+ let n=0;odIv=setInterval(()=>{if(tk!=odTok)return clearInterval(odIv);face('d1',d6());face('d2',d6());tone(rnd(250,600),.04,'square',.04);
+  if(++n>=14){clearInterval(odIv);face('d1',mine);face('d2',opp);$('d1').classList.remove('roll');$('d2').classList.remove('roll');
+   const win=mine>opp,first=win?color:oc;$('pl'+(win?1:2)).classList.add('win');
+   $('dmsg').innerHTML=`${win?'คุณ':'คู่แข่ง'}ทอยได้แต้มมากกว่า (${mine} ต่อ ${opp})<br>${win?'คุณเดินก่อน':'คู่แข่งเดินก่อน'} · คุณเล่นฝ่าย${color=='w'?'ขาว':'ดำ'}`;
+   tone(500,.2,'triangle',.1);if(win)celebrate();
+   setTimeout(()=>{if(tk!=odTok)return;$('dice').classList.remove('on');$('dback').hidden=false;startOnline(color,first)},2400)}},90)}
 function wire(c){net.conn=c;
  c.on('data',d=>{if(!d||net.conn!==c)return;
-  if(d.t=='start')startOnline(d.you);
-  else if(d.t=='again')startOnline(net.color=='w'?'b':'w');
+  if(d.t=='start'&&!net.host)onlineDice(d.you,d.d[1],d.d[0]);
+  else if(d.t=='again'&&net.host&&net.on)hostStart(net.color=='w'?'b':'w');
   else if(d.t=='mv'&&net.on&&!S.over&&S.turn!=net.color&&Array.isArray(d.m)){
    const pc=S.b[d.r]&&S.b[d.r][d.c];if(!pc||isW(pc)!=(S.turn=='w'))return;
    const m=legal(S.b,S.st,d.r,d.c).find(x=>x[0]==d.m[0]&&x[1]==d.m[1]&&x[2]==d.m[2]);
@@ -509,14 +524,14 @@ function wire(c){net.conn=c;
  c.on('close',()=>{if(net.conn!==c)return;net.conn=null;if(net.on)toast('คู่แข่งหลุดการเชื่อมต่อ — กด "เมนูหลัก" เพื่อออก',0)});
  c.on('error',()=>{})}
 function hostRoom(){if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();const code=rcode(),p=net.peer=new Peer('chessimpact-'+code);
+ netClose();net.host=true;const code=rcode(),p=net.peer=new Peer('chessimpact-'+code);
  p.on('open',()=>{$('code').textContent=code;showO('host')});
  p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')hostRoom();else{netClose();showO('home','เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง')}});
  p.on('connection',c=>{if(net.conn){c.close();return}wire(c);
-  c.on('open',()=>{const hc=Math.random()<.5?'w':'b';c.send({t:'start',you:hc=='w'?'b':'w'});startOnline(hc)})})}
+  c.on('open',()=>hostStart(Math.random()<.5?'w':'b'))})}
 function joinRoom(){const code=$('jin').value.trim().toUpperCase();if(code.length!=5)return showO('join','รหัสห้องต้องมี 5 ตัวอักษร');
  if(typeof Peer=='undefined')return showO('join','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
+ netClose();net.host=false;showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
  const fail=m=>{if(net.peer!==p)return;clearTimeout(to);netClose();showO('join',m)},to=setTimeout(()=>fail('เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสห้องแล้วลองใหม่'),12000);
  p.on('error',e=>fail(e.type=='peer-unavailable'?'ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง':'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง'));
  p.on('open',()=>{const c=p.connect('chessimpact-'+code,{reliable:true});wire(c);c.on('open',()=>clearTimeout(to))})}
@@ -530,7 +545,7 @@ $('oback').onclick=()=>{$('online').classList.remove('on');showMenu()};
 const PIP={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 const face=(id,n)=>$(id).innerHTML=Array.from({length:9},(_,i)=>`<i${PIP[n].includes(i)?' class="on"':''}></i>`).join('');
 const d6=()=>1+Math.random()*6|0;let rolling=false,winner=0;
-function openDice(){rolling=false;$('dice').classList.add('on');face('d1',1);face('d2',1);$('pl1').className=$('pl2').className='pl';
+function openDice(){rolling=false;$('pl1').querySelector('span').textContent='ผู้เล่น 1 · ขาว ♔';$('pl2').querySelector('span').textContent='ผู้เล่น 2 · ดำ ♚';$('dback').hidden=false;$('dice').classList.add('on');face('d1',1);face('d2',1);$('pl1').className=$('pl2').className='pl';
  $('dmsg').textContent='ผู้เล่น 1 เป็นฝ่ายขาว · ผู้เล่น 2 เป็นฝ่ายดำ — ใครทอยได้แต้มมากกว่าจะได้เดินก่อน';$('roll').hidden=false;$('go').hidden=true}
 function roll(){if(rolling||!$('dice').classList.contains('on'))return;rolling=true;$('roll').hidden=true;$('go').hidden=true;
  $('pl1').className=$('pl2').className='pl';$('dmsg').textContent='กำลังทอย…';$('d1').classList.add('roll');$('d2').classList.add('roll');
