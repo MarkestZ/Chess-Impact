@@ -6,7 +6,7 @@
 <title>Chess Impact – หมากรุกสากล</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0e1420;--panel:#18212f;--ink:#e9eef7;--mute:#8a97ad;--lt:linear-gradient(135deg,#f3e6bd,#dcc58a);--dk:linear-gradient(135deg,#6a4226,#3b2112);--gold:#f4b942;--red:#ff4d5e;--s:min(94vw,calc(100vh - 250px),700px);--b:calc(var(--s)*.82);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
+:root{--bg:#0e1420;--panel:#18212f;--ink:#e9eef7;--mute:#8a97ad;--lt:linear-gradient(135deg,#f3e6bd,#dcc58a);--dk:linear-gradient(135deg,#6a4226,#3b2112);--gold:#f4b942;--red:#ff4d5e;--s:min(94vw,calc(100vh - 290px),700px);--b:calc(var(--s)*.82);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
 body{background:radial-gradient(ellipse at 50% 30%,#1b2740,var(--bg) 70%) fixed;background-color:var(--bg);color:var(--ink);font-family:'Prompt',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0 18px;overflow-x:hidden}
@@ -184,6 +184,15 @@ h1 .inline-icon {
 #jin:focus{outline:none;border-color:var(--gold)}
 #toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);z-index:80;background:var(--panel);border:1px solid var(--gold);color:var(--ink);padding:8px 18px;border-radius:99px;font-weight:600;font-size:14px;pointer-events:none;max-width:92vw;text-align:center}
 #board.flip,#board.flip .sq{transform:rotate(180deg)}
+#ml{width:var(--s);min-height:40px;display:flex;align-items:center;gap:6px;overflow-x:auto;padding:5px 2px;white-space:nowrap;font-size:13px;font-weight:600;scrollbar-width:thin}
+#ml .n{flex:none;color:var(--mute)}
+#ml .m{flex:none;display:flex;align-items:center;gap:4px;background:var(--panel);border:1px solid #2f3d58;border-radius:99px;padding:3px 11px}
+#ml .m.last{border-color:var(--gold);background:#2a3042;box-shadow:0 0 12px #f4b94244}
+#ml .m small{color:var(--gold);font-weight:600}
+#ml .e{color:var(--mute);font-weight:400}
+#ml .g{font-size:19px;line-height:1}
+#ml .g.w{color:#fff6dc;-webkit-text-stroke:1px #dcaa3c;paint-order:stroke fill}
+#ml .g.b{color:#1a1208;-webkit-text-stroke:1px #e8b94a;paint-order:stroke fill}
 </style>
 </head>
 <body>
@@ -194,6 +203,7 @@ h1 .inline-icon {
 <div class="tray" id="capTop"></div>
 <div id="wrap"><div id="frame"><div id="in"><div id="studs"></div><div id="board"></div></div></div></div>
 <div class="tray" id="capBot"></div>
+<div id="ml" aria-label="ประวัติการเดิน"></div>
 <div class="btns">
   <button id="home">เมนูหลัก</button>
   <select id="mode" hidden aria-label="โหมดเกม"><option value="0">2 ผู้เล่น</option><option value="1">สู้คอม · ง่าย</option><option value="2" selected>สู้คอม · กลาง</option><option value="3">สู้คอม · ยาก</option><option value="4">สู้คอม · เซียน</option></select>
@@ -429,7 +439,7 @@ function clearFx(){document.querySelectorAll('.turn').forEach(e=>e.remove());T.f
 /* ---------- Game ---------- */
 const net={on:false,host:false,color:'w',peer:null,conn:null};
 const SQ=[];let S,sel=null,busy=false,hist=[],vs=2,aiTok=0,wp=0,tTok=0,startTurn='w';
-const fresh=()=>({b:['rnbqkbnr','pppppppp',...Array(4).fill(null).map(()=>'        '),'PPPPPPPP','RNBQKBNR'].map(r=>r.split('').map(x=>x==' '?null:x)),st:{cs:'KQkq',ep:null},turn:'w',last:null,capW:[],capB:[],over:false,mate:false,hm:0,pos:[],dr:null});
+const fresh=()=>({b:['rnbqkbnr','pppppppp',...Array(4).fill(null).map(()=>'        '),'PPPPPPPP','RNBQKBNR'].map(r=>r.split('').map(x=>x==' '?null:x)),st:{cs:'KQkq',ep:null},turn:'w',last:null,capW:[],capB:[],over:false,mate:false,hm:0,pos:[],dr:null,mv:[]});
 for(let r=0;r<8;r++){SQ[r]=[];for(let c=0;c<8;c++){const d=document.createElement('div');d.onclick=()=>click(r,c);boardEl.append(d);SQ[r][c]=d}}
 function render(){const mvs=sel?sel.mv:[],w=S.turn=='w',ck=!S.over||S.mate?inCheck(S.b,w):false,kw=ck?findK(S.b,w):null;
  for(let r=0;r<8;r++)for(let c=0;c<8;c++){const e=SQ[r][c],p=S.b[r][c];let cl='sq '+((r+c)%2?'d':'l');
@@ -442,7 +452,12 @@ function render(){const mvs=sel?sel.mv:[],w=S.turn=='w',ck=!S.over||S.mate?inChe
  const t=$('turn');t.className=(w?'':'b ')+(ck?'c':'');
  t.querySelector('span').textContent=S.mate?`รุกฆาต! ${w?'ดำ':'ขาว'}ชนะ`:S.over?'เสมอ':(w?'ตาขาว':'ตาดำ')+(wp?` (ผู้เล่น ${w?wp:3-wp})`:'')+(net.on&&!S.over?(S.turn==net.color?' · ตาคุณ':' · รอคู่แข่ง'):'')+(ck?' · ถูกเช็ค!':'');
  const tray=(a)=>a.slice().sort((x,y)=>V[y.toLowerCase()]-V[x.toLowerCase()]).map(p=>`<span class="${isW(p)?'w':'b'}">${glyph(p)}</span>`).join('');
- $('capTop').innerHTML=tray(S.capW);$('capBot').innerHTML=tray(S.capB)}
+ $('capTop').innerHTML=tray(S.capW);$('capBot').innerHTML=tray(S.capB);mlist()}
+const sqn=(r,c)=>'abcdefgh'[c]+(8-r);
+function mlist(){const el=$('ml'),L=S.mv||[],k=L.length+JSON.stringify(L[L.length-1]||0);if(el.dataset.k==k)return;el.dataset.k=k;
+ el.innerHTML=L.length?L.map((m,i)=>{const w=isW(m.p);return(w?`<span class="n">${Math.floor(i/2)+1}.</span>`:'')+`<span class="m${i==L.length-1?' last':''}"><span class="g ${w?'w':'b'}">${glyph(m.p)}</span>${sqn(...m.f)}${m.x?'×':'→'}${sqn(...m.t)}`
+  +(m.x?`<span class="g ${w?'b':'w'}">${glyph(m.x)}</span>`:'')+(m.pr?`=<span class="g ${w?'w':'b'}">${glyph(m.pr)}</span>`:'')+(m.cs?`<small>${m.cs==1?'O-O':'O-O-O'}</small>`:'')+(m.k||'')+'</span>'}).join(''):'<span class="e">ยังไม่มีการเดิน — เดินหมากแล้วจะแสดงตรงนี้</span>';
+ el.scrollLeft=el.scrollWidth}
 function slide(r,c,R,C){const el=SQ[R][C].querySelector('.p');if(!el)return;const s=(flipped()?-1:1)*boardEl.getBoundingClientRect().width/8;
  el.style.zIndex=9;el.animate([{transform:`translate(${(c-C)*s}px,${(r-R)*s}px) scale(1.2)`},{transform:'none'}],{duration:220,easing:'cubic-bezier(.3,.7,.3,1)'})}
 function click(r,c){if(S.over||busy||(vs&&S.turn=='b')||(net.on&&(!net.conn||S.turn!=net.color)))return;const p=S.b[r][c];
@@ -464,6 +479,7 @@ function exec(r,c,m,pr){if(net.on&&!rcv&&net.conn)net.conn.send({t:'mv',r,c,m,pr
   else if(S.hm>=100)S.dr='เดินครบ 50 ตาโดยไม่กินหมากและไม่เดินเบี้ย';
   else if(S.pos.filter(k=>k==key).length>=3)S.dr='ตำแหน่งเดิมซ้ำครบ 3 ครั้ง';
   if(S.dr)S.over=true}
+ S.mv.push({p:pc,f:[r,c],t:[m[0],m[1]],x:x.cap||'',pr:x.promoted||'',cs:m[2]=='cs'?1:m[2]=='cq'?2:0,k:S.mate?'#':chk?'+':''});
  render();slide(r,c,m[0],m[1]);
  setTimeout(()=>{
   if(x.cap)fxCapture(m[0],m[1],x.cap);else if(!x.promoted)fxMove();
@@ -487,10 +503,10 @@ function aiTurn(delay){busy=true;const tok=aiTok;$('turn').querySelector('span')
  setTimeout(()=>{if(tok!=aiTok)return;think(vs,o=>{if(tok!=aiTok)return;busy=false;exec(o.r,o.c,o.m,'Q')})},delay)}
 
 /* ---------- Online: private room (PeerJS / WebRTC) ---------- */
-const flipped=()=>net.on&&net.color=='b';let rcv=false,odTok=0,odIv=0;
+const flipped=()=>net.on&&net.color=='b';let rcv=false,odTok=0,odIv=0,rtTok=0;
 const AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',rcode=()=>Array.from({length:5},()=>AL[Math.random()*AL.length|0]).join('');
 function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);if(ms)toast.t=setTimeout(()=>e.hidden=true,ms)}
-function netClose(){odTok++;clearInterval(odIv);$('dice').classList.remove('on');const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
+function netClose(){odTok++;rtTok++;net.gtok=null;clearInterval(odIv);$('dice').classList.remove('on');const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
 function showO(s,m){$('ohome').hidden=s!='home';$('ocode').hidden=s!='host';$('ojoinbox').hidden=s!='join';
  $('omsg').textContent=m||{home:'สร้างห้องแล้วส่งรหัสให้เพื่อน หรือใส่รหัสห้องของเพื่อน',host:'ส่งรหัสนี้ให้เพื่อน แล้วรอเพื่อนเข้าห้อง…',join:'ใส่รหัสห้อง 5 ตัวอักษร'}[s]||''}
 function openOnline(){netClose();$('menu').classList.remove('on');$('online').classList.add('on');showO('home')}
@@ -513,26 +529,47 @@ function onlineDice(color,mine,opp){const tk=++odTok;clearInterval(odIv);net.on=
    $('dmsg').innerHTML=`${win?'คุณ':'คู่แข่ง'}ทอยได้แต้มมากกว่า (${mine} ต่อ ${opp})<br>${win?'คุณเดินก่อน':'คู่แข่งเดินก่อน'} · คุณเล่นฝ่าย${color=='w'?'ขาว':'ดำ'}`;
    tone(500,.2,'triangle',.1);if(win)celebrate();
    setTimeout(()=>{if(tk!=odTok)return;$('dice').classList.remove('on');$('dback').hidden=false;startOnline(color,first)},2400)}},90)}
-function wire(c){net.conn=c;
- c.on('data',d=>{if(!d||net.conn!==c)return;
+function onLost(c){if(net.conn!==c)return;net.conn=null;if(!net.on)return;
+ if(net.host)toast('คู่แข่งหลุดการเชื่อมต่อ — กำลังรอเชื่อมต่อใหม่… (หรือกด "เมนูหลัก" เพื่อออก)',0);else guestRetry()}
+function guestRetry(){const tk=++rtTok,t0=Date.now();
+ const attempt=()=>{if(tk!=rtTok||!net.on||(net.conn&&net.conn.open))return;
+  if(Date.now()-t0>60000)return toast('เชื่อมต่อใหม่ไม่สำเร็จ — กด "เมนูหลัก" เพื่อออก',0);
+  toast('หลุดการเชื่อมต่อ กำลังเชื่อมต่อใหม่…',0);
+  try{net.peer&&net.peer.destroy()}catch(e){}
+  const p=net.peer=new Peer();let done=false;
+  const retry=()=>{if(done||tk!=rtTok)return;done=true;clearTimeout(to);if(net.conn&&!net.conn.open)net.conn=null;setTimeout(attempt,1500)},to=setTimeout(retry,8000);
+  p.on('error',retry);
+  p.on('open',()=>{if(done||tk!=rtTok)return;const c=p.connect('chessimpact-'+net.code,{reliable:true});wire(c);c.on('open',()=>{done=true;clearTimeout(to)});c.on('error',retry)})};
+ attempt()}
+function wire(c){net.conn=c;c.__t=Date.now();
+ const hb=setInterval(()=>{if(net.conn!==c)return clearInterval(hb);try{c.send({t:'p'})}catch(e){}
+  if(Date.now()-c.__t>12000){clearInterval(hb);try{c.close()}catch(e){}onLost(c)}},3000);
+ c.on('open',()=>{c.__t=Date.now();if(!net.host)c.send({t:'hi',tok:net.tok})});
+ c.on('data',d=>{if(!d||net.conn!==c)return;c.__t=Date.now();
   if(d.t=='start'&&!net.host)onlineDice(d.you,d.d[1],d.d[0]);
+  else if(d.t=='sync'&&!net.host&&d.S&&Array.isArray(d.S.b)){S=d.S;sel=null;busy=false;clearFx();render();toast('เชื่อมต่อใหม่แล้ว ✓ ซิงก์เกมเรียบร้อย',2500)}
   else if(d.t=='again'&&net.host&&net.on)hostStart(net.color=='w'?'b':'w');
   else if(d.t=='mv'&&net.on&&!S.over&&S.turn!=net.color&&Array.isArray(d.m)){
    const pc=S.b[d.r]&&S.b[d.r][d.c];if(!pc||isW(pc)!=(S.turn=='w'))return;
    const m=legal(S.b,S.st,d.r,d.c).find(x=>x[0]==d.m[0]&&x[1]==d.m[1]&&x[2]==d.m[2]);
    if(m){rcv=true;try{exec(d.r,d.c,m,d.pr||'Q')}finally{rcv=false}}}});
- c.on('close',()=>{if(net.conn!==c)return;net.conn=null;if(net.on)toast('คู่แข่งหลุดการเชื่อมต่อ — กด "เมนูหลัก" เพื่อออก',0)});
+ c.on('close',()=>{clearInterval(hb);onLost(c)});
  c.on('error',()=>{})}
 function hostRoom(){if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
  netClose();net.host=true;const code=rcode(),p=net.peer=new Peer('chessimpact-'+code);
  p.on('open',()=>{$('code').textContent=code;showO('host')});
- p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')hostRoom();else{netClose();showO('home','เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง')}});
- p.on('connection',c=>{if(net.conn){c.close();return}wire(c);
-  c.on('open',()=>hostStart(Math.random()<.5?'w':'b'))})}
+ net.code=code;
+ p.on('disconnected',()=>{if(net.peer===p&&!p.destroyed)setTimeout(()=>{try{p.reconnect()}catch(e){}},1500)});
+ p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')hostRoom();else if(net.on){if(p.disconnected)setTimeout(()=>{try{p.reconnect()}catch(e){}},2000)}else{netClose();showO('home','เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง')}});
+ p.on('connection',c=>c.on('data',d=>{if(!d||d.t!='hi'||c.__ok||net.peer!==p)return;
+  if(!net.gtok){if(net.conn){c.close();return}net.gtok=d.tok;c.__ok=1;wire(c);hostStart(Math.random()<.5?'w':'b')}
+  else if(d.tok===net.gtok){c.__ok=1;const o=net.conn;net.conn=null;try{o&&o.close()}catch(e){}wire(c);
+   if(S){c.send({t:'sync',S});toast('คู่แข่งกลับมาแล้ว ✓',2000)}}
+  else c.close()}))}
 function joinRoom(){const code=$('jin').value.trim().toUpperCase();if(code.length!=5)return showO('join','รหัสห้องต้องมี 5 ตัวอักษร');
  if(typeof Peer=='undefined')return showO('join','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();net.host=false;showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
- const fail=m=>{if(net.peer!==p)return;clearTimeout(to);netClose();showO('join',m)},to=setTimeout(()=>fail('เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสห้องแล้วลองใหม่'),12000);
+ netClose();net.host=false;net.code=code;net.tok=rcode()+rcode()+rcode();showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
+ const fail=m=>{if(net.peer!==p||net.on)return;clearTimeout(to);netClose();showO('join',m)},to=setTimeout(()=>fail('เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสห้องแล้วลองใหม่'),12000);
  p.on('error',e=>fail(e.type=='peer-unavailable'?'ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง':'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง'));
  p.on('open',()=>{const c=p.connect('chessimpact-'+code,{reliable:true});wire(c);c.on('open',()=>clearTimeout(to))})}
 $('ocreate').onclick=hostRoom;
