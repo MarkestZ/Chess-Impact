@@ -241,7 +241,7 @@ h1 .inline-icon {
 <div id="online">
   <h2>เล่นออนไลน์</h2>
   <p id="omsg"></p>
-  <div id="ohome" class="row"><button class="go" id="ocreate">สร้างห้อง</button><button class="go" id="ojoin">เข้าร่วมห้อง</button></div>
+  <div id="ohome" class="row"><button class="go" id="ocreate">สร้างห้อง</button><button class="go" id="ojoin">เข้าร่วมห้อง</button><button class="go" id="ores" hidden></button></div>
   <div id="ocode" hidden><div id="code"></div><button id="ocopy">คัดลอกรหัส</button></div>
   <div id="ojoinbox" class="row" hidden><input id="jin" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="รหัสห้อง" aria-label="รหัสห้อง"><button class="go" id="jgo">เข้าห้อง</button></div>
   <button class="link" id="oback">ย้อนกลับ</button>
@@ -479,7 +479,7 @@ function exec(r,c,m,pr){if(net.on&&!rcv&&net.conn)net.conn.send({t:'mv',r,c,m,pr
   else if(S.hm>=100)S.dr='เดินครบ 50 ตาโดยไม่กินหมากและไม่เดินเบี้ย';
   else if(S.pos.filter(k=>k==key).length>=3)S.dr='ตำแหน่งเดิมซ้ำครบ 3 ครั้ง';
   if(S.dr)S.over=true}
- S.mv.push({p:pc,f:[r,c],t:[m[0],m[1]],x:x.cap||'',pr:x.promoted||'',cs:m[2]=='cs'?1:m[2]=='cq'?2:0,k:S.mate?'#':chk?'+':''});
+ if(net.on&&net.host)setTimeout(saveHost,0);S.mv.push({p:pc,f:[r,c],t:[m[0],m[1]],x:x.cap||'',pr:x.promoted||'',cs:m[2]=='cs'?1:m[2]=='cq'?2:0,k:S.mate?'#':chk?'+':''});
  render();slide(r,c,m[0],m[1]);
  setTimeout(()=>{
   if(x.cap)fxCapture(m[0],m[1],x.cap);else if(!x.promoted)fxMove();
@@ -509,9 +509,9 @@ function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTime
 function netClose(){odTok++;rtTok++;net.gtok=null;clearInterval(odIv);$('dice').classList.remove('on');const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
 function showO(s,m){$('ohome').hidden=s!='home';$('ocode').hidden=s!='host';$('ojoinbox').hidden=s!='join';
  $('omsg').textContent=m||{home:'สร้างห้องแล้วส่งรหัสให้เพื่อน หรือใส่รหัสห้องของเพื่อน',host:'ส่งรหัสนี้ให้เพื่อน แล้วรอเพื่อนเข้าห้อง…',join:'ใส่รหัสห้อง 5 ตัวอักษร'}[s]||''}
-function openOnline(){netClose();$('menu').classList.remove('on');$('online').classList.add('on');showO('home')}
+function openOnline(){netClose();$('menu').classList.remove('on');$('online').classList.add('on');showO('home');const o=loadHost();$('ores').hidden=!o;if(o)$('ores').textContent='ต่อห้องเดิม '+o.code}
 function startOnline(color,first){net.on=true;net.color=color;startTurn=first||'w';wp=0;$('mode').value=0;boardEl.classList.toggle('flip',color=='b');
- $('online').classList.remove('on');$('menu').classList.remove('on');newGame();
+ $('online').classList.remove('on');$('menu').classList.remove('on');newGame();saveHost();
  if(net.conn)toast('คุณเล่นฝ่าย'+(color=='w'?'ขาว ♔':'ดำ ♚')+(first==color?' · เดินก่อน':' · คู่แข่งเดินก่อน'),3500)}
 function rematch(){if(!net.conn)return toast('คู่แข่งออกจากห้องแล้ว — กด "เมนูหลัก"',3500);if(net.host)hostStart(net.color=='w'?'b':'w');else net.conn.send({t:'again'})}
 function hostStart(hc){if(!net.conn)return;let a,b;do{a=d6();b=d6()}while(a==b);
@@ -547,7 +547,7 @@ function wire(c){net.conn=c;c.__t=Date.now();
  c.on('open',()=>{c.__t=Date.now();if(!net.host)c.send({t:'hi',tok:net.tok})});
  c.on('data',d=>{if(!d||net.conn!==c)return;c.__t=Date.now();
   if(d.t=='start'&&!net.host)onlineDice(d.you,d.d[1],d.d[0]);
-  else if(d.t=='sync'&&!net.host&&d.S&&Array.isArray(d.S.b)){S=d.S;sel=null;busy=false;clearFx();render();toast('เชื่อมต่อใหม่แล้ว ✓ ซิงก์เกมเรียบร้อย',2500)}
+  else if(d.t=='sync'&&!net.host&&d.S&&Array.isArray(d.S.b)){if(!net.on){net.on=true;net.color=d.you||'b';vs=0;wp=0;$('mode').value=0;boardEl.classList.toggle('flip',net.color=='b');$('online').classList.remove('on');$('menu').classList.remove('on');$('dice').classList.remove('on')}S=d.S;sel=null;busy=false;clearFx();render();toast('เชื่อมต่อใหม่แล้ว ✓ ซิงก์เกมเรียบร้อย',2500)}
   else if(d.t=='again'&&net.host&&net.on)hostStart(net.color=='w'?'b':'w');
   else if(d.t=='mv'&&net.on&&!S.over&&S.turn!=net.color&&Array.isArray(d.m)){
    const pc=S.b[d.r]&&S.b[d.r][d.c];if(!pc||isW(pc)!=(S.turn=='w'))return;
@@ -555,24 +555,38 @@ function wire(c){net.conn=c;c.__t=Date.now();
    if(m){rcv=true;try{exec(d.r,d.c,m,d.pr||'Q')}finally{rcv=false}}}});
  c.on('close',()=>{clearInterval(hb);onLost(c)});
  c.on('error',()=>{})}
-function hostRoom(){if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();net.host=true;const code=rcode(),p=net.peer=new Peer('chessimpact-'+code);
- p.on('open',()=>{$('code').textContent=code;showO('host')});
- net.code=code;
+const saveHost=()=>{if(net.on&&net.host)try{localStorage.ci_host=JSON.stringify({code:net.code,gtok:net.gtok,color:net.color,S,ts:Date.now()})}catch(e){}};
+const clearHost=()=>{try{localStorage.removeItem('ci_host')}catch(e){}};
+const loadHost=()=>{try{const o=JSON.parse(localStorage.ci_host);return o&&o.S&&o.code&&Date.now()-o.ts<6*36e5?o:null}catch(e){return null}};
+const tokFor=c=>{const mk=()=>rcode()+rcode()+rcode();try{const k='ci_tok_'+c;let v=localStorage[k];if(!v)localStorage[k]=v=mk();return v}catch(e){return mk()}};
+function hostWire(p,unavail){
  p.on('disconnected',()=>{if(net.peer===p&&!p.destroyed)setTimeout(()=>{try{p.reconnect()}catch(e){}},1500)});
- p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')hostRoom();else if(net.on){if(p.disconnected)setTimeout(()=>{try{p.reconnect()}catch(e){}},2000)}else{netClose();showO('home','เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง')}});
+ p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')unavail();else if(net.on){if(p.disconnected)setTimeout(()=>{try{p.reconnect()}catch(e){}},2000)}else{netClose();showO('home','เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง')}});
  p.on('connection',c=>c.on('data',d=>{if(!d||d.t!='hi'||c.__ok||net.peer!==p)return;
   if(!net.gtok){if(net.conn){c.close();return}net.gtok=d.tok;c.__ok=1;wire(c);hostStart(Math.random()<.5?'w':'b')}
   else if(d.tok===net.gtok){c.__ok=1;const o=net.conn;net.conn=null;try{o&&o.close()}catch(e){}wire(c);
-   if(S){c.send({t:'sync',S});toast('คู่แข่งกลับมาแล้ว ✓',2000)}}
+   if(net.on){c.send({t:'sync',S,you:net.color=='w'?'b':'w'});toast('คู่แข่งกลับมาแล้ว ✓',2000)}}
   else c.close()}))}
+function hostRoom(){if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
+ netClose();net.host=true;const code=rcode(),p=net.peer=new Peer('chessimpact-'+code);net.code=code;
+ p.on('open',()=>{$('code').textContent=code;showO('host')});
+ hostWire(p,hostRoom)}
+function resumeHost(){const o=loadHost();if(!o)return showO('home','ไม่พบห้องเดิม');
+ if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
+ netClose();net.host=true;net.code=o.code;net.gtok=o.gtok;showO('wait','กำลังกู้ห้อง '+o.code+'…');const t0=Date.now(),tk=++rtTok;
+ const go=()=>{if(tk!=rtTok)return;const p=net.peer=new Peer('chessimpact-'+o.code);
+  p.on('open',()=>{if(net.peer!==p)return;net.on=true;net.color=o.color;S=o.S;vs=0;wp=0;$('mode').value=0;sel=null;busy=false;clearFx();
+   boardEl.classList.toggle('flip',o.color=='b');$('online').classList.remove('on');$('menu').classList.remove('on');render();
+   toast('กู้ห้อง '+o.code+' แล้ว — รอคู่แข่งต่อกลับเข้ามา…',0)});
+  hostWire(p,()=>{if(Date.now()-t0>45000){netClose();showO('home','กู้ห้องไม่สำเร็จ ลองใหม่อีกครั้ง');return}try{p.destroy()}catch(e){}net.peer=null;setTimeout(go,3000)})};
+ go()}
 function joinRoom(){const code=$('jin').value.trim().toUpperCase();if(code.length!=5)return showO('join','รหัสห้องต้องมี 5 ตัวอักษร');
  if(typeof Peer=='undefined')return showO('join','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();net.host=false;net.code=code;net.tok=rcode()+rcode()+rcode();showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
+ netClose();net.host=false;net.code=code;net.tok=tokFor(code);showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
  const fail=m=>{if(net.peer!==p||net.on)return;clearTimeout(to);netClose();showO('join',m)},to=setTimeout(()=>fail('เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสห้องแล้วลองใหม่'),12000);
  p.on('error',e=>fail(e.type=='peer-unavailable'?'ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง':'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง'));
  p.on('open',()=>{const c=p.connect('chessimpact-'+code,{reliable:true});wire(c);c.on('open',()=>clearTimeout(to))})}
-$('ocreate').onclick=hostRoom;
+$('ocreate').onclick=hostRoom;$('ores').onclick=resumeHost;
 $('ojoin').onclick=()=>{showO('join');$('jin').focus()};
 $('jgo').onclick=joinRoom;
 $('jin').onkeydown=e=>{if(e.key=='Enter')joinRoom()};
@@ -609,7 +623,7 @@ function showEnd(winW){resMode='end';const side=winW?'ขาว':'ดำ';
 $('res').onclick=e=>{if(resMode=='end'){if(e.target.closest('#rtap')){if(net.on)return rematch();$('res').classList.remove('on');newGame()}return}
  rolling=false;wp=1;startTurn=winner==1?'w':'b';clearFx();$('res').classList.remove('on');$('dice').classList.remove('on');$('mode').value=0;newGame()};
 $('rview').onclick=e=>{e.stopPropagation();$('res').classList.remove('on')};
-$('rmenu').onclick=e=>{e.stopPropagation();showMenu()};
+$('rmenu').onclick=e=>{e.stopPropagation();clearHost();showMenu()};
 $('roll').onclick=roll;
 $('go').onclick=()=>{wp=1;startTurn=winner==1?'w':'b';$('dice').classList.remove('on');$('mode').value=0;newGame()};
 $('dback').onclick=()=>{if(rolling)return;$('dice').classList.remove('on');$('menu').classList.add('on')};
@@ -619,7 +633,7 @@ $('menu').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.
  else if(a=='online'){openOnline()}
  else if(a=='0'){$('menu').classList.remove('on');openDice()}
  else{wp=0;$('mode').value=a;$('menu').classList.remove('on');newGame()}};
-$('home').onclick=showMenu;
+$('home').onclick=()=>{clearHost();showMenu()};
 $('newg').onclick=()=>{if(net.on)return toast('ออนไลน์: กดเล่นอีกครั้งหลังจบเกม',2500);newGame()};
 $('undo').onclick=()=>{if(net.on||busy||!hist.length)return;aiTok++;clearFx();S=JSON.parse(hist.pop());if(vs&&S.turn=='b'&&hist.length)S=JSON.parse(hist.pop());sel=null;render();const tk=++tTok;setTimeout(()=>{if(tk==tTok)turnBanner()},250)};
 $('mode').onchange=newGame;
