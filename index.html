@@ -9,7 +9,7 @@
 :root{--bg:#0e1420;--panel:#18212f;--ink:#e9eef7;--mute:#8a97ad;--lt:linear-gradient(135deg,#f3e6bd,#dcc58a);--dk:linear-gradient(135deg,#6a4226,#3b2112);--gold:#f4b942;--red:#ff4d5e;--s:max(240px,min(94vw,calc(100vh - 290px),800px));--b:calc(var(--s)*.82);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
 *{box-sizing:border-box}
 html,body{margin:0;min-height:100%}
-body{background:radial-gradient(ellipse at 50% 30%,#1b2740,var(--bg) 70%) fixed;background-color:var(--bg);color:var(--ink);font-family:'Prompt',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0 18px;overflow-x:hidden}
+body{background:radial-gradient(ellipse at 50% 30%,#1b2740,var(--bg) 70%) fixed;background-color:var(--bg);color:var(--ink);font-family:'Prompt',system-ui,sans-serif;display:flex;flex-direction:column;align-items:center;gap:10px;padding:12px 0 66px;overflow-x:hidden}
 header{width:var(--s);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 h1{margin:0;font-size:clamp(18px,4.5vw,26px);font-weight:800;letter-spacing:.5px}
 #turn{display:flex;align-items:center;gap:8px;background:var(--panel);padding:6px 14px;border-radius:99px;font-weight:600;font-size:14px}
@@ -45,6 +45,16 @@ h1{margin:0;font-size:clamp(18px,4.5vw,26px);font-weight:800;letter-spacing:.5px
 .btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
 button{font:600 14px 'Prompt',system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid #2f3d58;padding:8px 16px;border-radius:10px;cursor:pointer}
 select{font:600 14px 'Prompt',system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid #2f3d58;padding:8px 10px;border-radius:10px;cursor:pointer}
+#mp{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:80;display:flex;align-items:center;gap:6px;max-width:calc(100vw - 90px);padding:6px;border-radius:99px;background:#18212ff2;border:1px solid #2f3d58;box-shadow:0 6px 18px #000a;font-size:13px}
+#mp button{padding:0;width:34px;height:34px;border-radius:50%;font-size:14px;line-height:1;display:grid;place-items:center;flex:none}
+#mp #mpp{background:var(--gold);color:#2a1a00;border:0}
+#mp #mpt.on{animation:mpsp 3s linear infinite}
+@keyframes mpsp{to{transform:rotate(360deg)}}
+#mp .ex{display:flex;align-items:center;gap:6px;min-width:0;padding-right:8px}
+#mp .nm{min-width:0;width:140px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:var(--mute);font-weight:600}
+#mp input[type=range]{width:64px;accent-color:var(--gold);flex:none}
+#mp.min .ex{display:none}#mp.min{padding:4px}
+@media (max-width:520px){#mp input[type=range]{display:none}#mp .nm{width:90px}}
 [hidden]{display:none!important}
 #board{touch-action:none}
 .sq.hov{box-shadow:inset 0 0 0 4px #f4b942}
@@ -298,6 +308,7 @@ body{padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inse
   <button id="snd">Sound: On</button>
   <select id="lang" aria-label="Language" data-i18n-aria="langaria"><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option><option value="th">ไทย</option></select>
 </div>
+<div id="mp" role="group" aria-label="Music player"><button id="mpt" title="Music" aria-label="Toggle music player">🎵</button><div class="ex"><button id="mpb" title="Previous" aria-label="Previous track">⏮</button><button id="mpp" title="Play / Pause" aria-label="Play or pause">▶</button><button id="mpf" title="Next" aria-label="Next track">⏭</button><span class="nm" id="mpn">…</span><input id="mpvol" type="range" min="0" max="100" value="32" aria-label="Music volume"></div></div>
 <div id="menu" class="on">
   <select id="lang2" class="langmenu" aria-label="Language" data-i18n-aria="langaria"><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option><option value="th">ไทย</option></select>
   <div class="bg"><span style="left:6%;animation-delay:0s">♞</span><span style="left:22%;animation-delay:-5s">♜</span><span style="left:40%;animation-delay:-9s">♛</span><span style="left:58%;animation-delay:-2s">♝</span><span style="left:74%;animation-delay:-7s">♚</span><span style="left:90%;animation-delay:-11s">♟︎</span></div>
@@ -465,9 +476,125 @@ return{isW,inb,gen,make,findK,inCheck,legal,anyMoves,bestMove}}
 const{isW,inb,gen,make,findK,inCheck,legal,anyMoves,bestMove}=ENGINE();
 
 /* ---------- Sound ---------- */
-let AC,mute=false;
-function tone(f,d,ty='sine',v=.15,t0=0,f2){if(mute)return;try{AC=AC||new AudioContext();const t=AC.currentTime+t0,o=AC.createOscillator(),g=AC.createGain();o.type=ty;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+d);g.gain.setValueAtTime(v,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g);g.connect(AC.destination);o.start(t);o.stop(t+d)}catch(e){}}
-const sfx={mv:()=>tone(520,.09,'triangle',.12,0,300),cap:v=>{tone(180,.3,'sawtooth',.18,0,40);tone(900,.12,'square',.07,0,200);if(v>3)tone(90,.5,'sine',.3,0,30)},chk:()=>{tone(880,.15,'square',.09);tone(660,.2,'square',.09,.15)},pro:()=>[523,659,784,1047,1319].forEach((f,i)=>tone(f,.3,'triangle',.14,i*.08)),mate:()=>{tone(60,1.2,'sine',.4,0,30);[392,523,659,784,1047].forEach((f,i)=>tone(f,.9,'triangle',.12,.3+i*.12))}};
+let AC,mute=false,MB,NB,REV;
+function actx(){
+ if(!AC){
+  AC=new(window.AudioContext||window.webkitAudioContext)();
+  const comp=AC.createDynamicsCompressor();
+  comp.threshold.value=-16;comp.knee.value=14;comp.ratio.value=8;comp.attack.value=.002;comp.release.value=.22;
+  MB=AC.createGain();MB.gain.value=.85;MB.connect(comp);comp.connect(AC.destination);
+  NB=AC.createBuffer(1,AC.sampleRate*2,AC.sampleRate);
+  const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  const n=AC.sampleRate*1.8|0,ir=AC.createBuffer(2,n,AC.sampleRate);
+  for(let c=0;c<2;c++){const x=ir.getChannelData(c);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/n,3)}
+  REV=AC.createConvolver();REV.buffer=ir;
+  const rg=AC.createGain();rg.gain.value=.55;REV.connect(rg);rg.connect(MB)}
+ if(AC.state=='suspended')AC.resume();
+ return AC}
+/* oscillator voice: f -> f2 pitch sweep, short attack (no clicks), exponential decay, optional reverb send */
+function tone(f,d,ty='sine',v=.15,t0=0,f2,rev=0){if(mute)return;
+ try{const a=actx(),t=a.currentTime+t0,o=a.createOscillator(),g=a.createGain();
+  o.type=ty;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(Math.max(1,f2),t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.004);g.gain.exponentialRampToValueAtTime(.001,t+d);
+  o.connect(g);g.connect(MB);if(rev){const r=a.createGain();r.gain.value=rev;g.connect(r);r.connect(REV)}
+  o.start(t);o.stop(t+d+.02)}catch(e){}}
+/* filtered noise voice: crack, crash, whoosh, rumble */
+function noise(d,v=.2,t0=0,type='bandpass',f=1000,f2,q=1,rev=0){if(mute)return;
+ try{const a=actx(),t=a.currentTime+t0,s=a.createBufferSource(),fl=a.createBiquadFilter(),g=a.createGain();
+  s.buffer=NB;s.loop=true;fl.type=type;fl.Q.value=q;fl.frequency.setValueAtTime(f,t);
+  if(f2)fl.frequency.exponentialRampToValueAtTime(Math.max(20,f2),t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.003);g.gain.exponentialRampToValueAtTime(.001,t+d);
+  s.connect(fl);fl.connect(g);g.connect(MB);if(rev){const r=a.createGain();r.gain.value=rev;g.connect(r);r.connect(REV)}
+  s.start(t,Math.random()*1.5);s.stop(t+d+.02)}catch(e){}}
+const sfx={
+ /* wooden clack of a piece landing on the board */
+ mv:()=>{noise(.05,.55,0,'bandpass',1900,1000,3);tone(240,.09,'triangle',.28,0,110);tone(95,.12,'sine',.3,0,55);noise(.04,.12,0,'highpass',5000)},
+ sel:()=>{tone(900,.05,'triangle',.08,0,1400);noise(.02,.1,0,'highpass',4500)},
+ ui:()=>{tone(1200,.05,'triangle',.06,0,1700);noise(.02,.05,0,'highpass',5000)},
+ tick:()=>{noise(.03,.25,0,'bandpass',2200,1400,3);tone(180+Math.random()*140,.05,'triangle',.12,0,100)},
+ /* capture: crack + punch + debris + metal ring, scaled by piece value (pawn < minor < rook < queen) */
+ cap:v=>{const k=v>=9?3:v>=5?2:v>=3?1:0;
+  noise(.07,.8,0,'bandpass',3200,1500,1.5);
+  tone(190,.22,'sine',.7,0,42);
+  tone(130,.25,'sawtooth',.16,0,50);
+  noise(.28+k*.12,.35+k*.1,.01,'lowpass',4500,250,.7,.35+k*.1);
+  tone(1568,.35+k*.1,'sine',.05,.005,1500,.6);tone(2217,.3,'sine',.03,.005,2100,.6);
+  if(k>=1){tone(70,.5,'sine',.6,.015,26);noise(.12,.5,.02,'highpass',2000)}
+  if(k>=2){tone(55,.9,'sine',.7,.04,22);noise(.7,.4,.05,'lowpass',2200,120,.8,.6);[262,330,392].forEach(f=>tone(f,.6,'sawtooth',.06,.06,f*.97,.5))}
+  if(k>=3){tone(40,1.3,'sine',.8,.06,18);noise(1.1,.5,.06,'lowpass',1800,80,.8,.8);tone(98,.9,'sawtooth',.2,.05,60);bgmDuck(.8,1200)}
+  else if(k>=2)bgmDuck(.55,800)},
+ /* check: alarm stinger with a low thud */
+ chk:()=>{tone(110,.3,'sine',.55,0,45);noise(.08,.5,0,'bandpass',2500,1200,2);
+  tone(880,.14,'sawtooth',.13,.02,840,.3);tone(660,.2,'sawtooth',.13,.17,600,.3);tone(990,.14,'square',.05,.02)},
+ /* promotion: rising riser -> sparkle arpeggio -> hit */
+ pro:()=>{noise(.5,.3,0,'bandpass',300,7000,2.5,.3);
+  [523,659,784,1047,1319].forEach((f,i)=>{tone(f,.35,'triangle',.14,.1+i*.07,undefined,.4);tone(f*2,.3,'sine',.05,.1+i*.07,undefined,.6)});
+  tone(160,.45,'sine',.65,.45,40);noise(.6,.4,.45,'lowpass',5000,300,.7,.5);tone(1568,.8,'sine',.06,.45,undefined,.8);bgmDuck(.55,1200)},
+ /* checkmate: huge sub boom + crash + victory chord */
+ mate:()=>{tone(45,1.6,'sine',.9,0,16);noise(.12,.9,0,'bandpass',2800,800,1);noise(1.6,.5,.01,'lowpass',2500,70,.7,.9);
+  tone(220,.5,'sawtooth',.2,0,40);tone(1000,1.2,'sine',.05,.02,990,.9);
+  [392,523,659,784,1047].forEach((f,i)=>tone(f,.9,'triangle',.12,.3+i*.12,undefined,.5));
+  [196,262].forEach(f=>tone(f,1.2,'sawtooth',.07,.35,f*.99,.4));bgmDuck(.85,2200)}};
+
+/* ---------- BGM: random track from asset/bgm/ + mini player ---------- */
+const BGM_DIR='asset/bgm/',BGM_EXT=/\.(mp3|ogg|oga|wav|m4a|aac|flac|opus|webm)$/i;
+/* Optional manual list (used if the server has no directory listing / playlist.json), e.g. ['theme1.mp3','battle.ogg'] */
+const BGM_FILES=[];
+const bgm={a:null,q:[],hist:[],last:'',ok:false,user:false,vol:.32,duck:0,dt:0};
+async function bgmScan(){const found=new Set();
+ try{const r=await fetch(BGM_DIR,{cache:'no-store'});
+  if(r.ok){const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+   doc.querySelectorAll('a[href]').forEach(a=>{let p=a.getAttribute('href').split('?')[0].split('#')[0];
+    try{p=decodeURIComponent(p)}catch(e){}p=p.split('/').pop();if(BGM_EXT.test(p))found.add(p)})}}catch(e){}
+ if(!found.size)try{const r=await fetch(BGM_DIR+'playlist.json',{cache:'no-store'});
+  if(r.ok){const j=await r.json();(Array.isArray(j)?j:j.files||[]).forEach(f=>{f=String(f).split('/').pop();if(BGM_EXT.test(f))found.add(f)})}}catch(e){}
+ BGM_FILES.forEach(f=>found.add(f));
+ return[...found]}
+function bgmVol(){if(bgm.a)bgm.a.volume=Math.max(0,Math.min(1,bgm.vol*(1-bgm.duck)))}
+function bgmDuck(amt,ms){if(!bgm.a)return;clearInterval(bgm.dt);bgm.duck=amt;bgmVol();
+ let n=0;bgm.dt=setInterval(()=>{if(++n<=10)return;const k=(n-10)/12;bgm.duck=amt*(1-k);bgmVol();if(k>=1){bgm.duck=0;bgmVol();clearInterval(bgm.dt)}},ms/22)}
+const bgmName=f=>f?f.replace(BGM_EXT,'').replace(/_+/g,' '):'';
+function bgmUI(){const nm=$('mpn'),pl=!!(bgm.a&&!bgm.a.paused&&!mute);
+ $('mpp').textContent=pl?'⏸':'▶';$('mpt').classList.toggle('on',pl);
+ nm.textContent=bgm.q.length?(bgmName(bgm.last)||'…'):'No music found';nm.title=nm.textContent}
+function bgmPlay(f){
+ if(!bgm.q.length)return;
+ if(!bgm.a){const a=bgm.a=new Audio();a.preload='auto';a.onended=bgmNext;a.onplay=a.onpause=bgmUI;
+  a.onerror=()=>{bgm.q=bgm.q.filter(x=>x!==bgm.last);bgm.hist=bgm.hist.filter(x=>x!==bgm.last);bgm.last='';bgmNext()}}
+ bgm.last=f;bgm.a.src=BGM_DIR+encodeURIComponent(f);bgmVol();
+ if(!mute&&!bgm.user){const p=bgm.a.play();if(p&&p.then)p.then(()=>{bgm.ok=true}).catch(()=>{})}
+ bgmUI()}
+function bgmNext(){
+ if(!bgm.q.length)return bgmUI();
+ let pool=bgm.q.filter(f=>f!==bgm.last);if(!pool.length)pool=bgm.q;
+ if(bgm.last){bgm.hist.push(bgm.last);if(bgm.hist.length>50)bgm.hist.shift()}
+ bgmPlay(pool[Math.random()*pool.length|0])}
+function bgmPrev(){const f=bgm.hist.pop();
+ if(f&&bgm.q.includes(f))bgmPlay(f);else if(bgm.a)bgm.a.currentTime=0}
+function bgmSync(){
+ if(bgm.a){if(mute||bgm.user)bgm.a.pause();else if(bgm.a.src)bgm.a.play().then(()=>{bgm.ok=true}).catch(()=>{});else bgmNext()}
+ bgmUI()}
+/* browsers block autoplay: start on the first tap/click/key, once the playlist is ready */
+const bgmKick=e=>{if(bgm.ok||mute||bgm.user||!bgm.q.length)return;if(e&&e.target&&e.target.closest&&e.target.closest('#mp'))return;bgmNext()};
+['pointerdown','touchend','keydown','click'].forEach(e=>addEventListener(e,bgmKick,true));
+bgmScan().then(l=>{bgm.q=l;if(l.length&&!bgm.user)bgmNext();else bgmUI()});
+document.addEventListener('visibilitychange',()=>{if(!bgm.a||!bgm.ok)return;
+ if(document.hidden)bgm.a.pause();else if(!mute&&!bgm.user)bgm.a.play().catch(()=>{})});
+/* player controls: any action while Sound is Off turns it back on */
+const bgmWake=()=>{if(mute){mute=false;$('snd').textContent=tr('snd_on')}bgm.user=false};
+$('mpp').onclick=()=>{
+ if(bgm.a&&!bgm.a.paused&&!mute){bgm.user=true;bgm.a.pause();return bgmUI()}
+ bgmWake();
+ if(!bgm.a||!bgm.a.src)bgmNext();else bgm.a.play().then(()=>{bgm.ok=true}).catch(()=>{});
+ bgmUI()};
+$('mpf').onclick=()=>{bgmWake();bgmNext()};
+$('mpb').onclick=()=>{bgmWake();bgmPrev()};
+$('mpvol').oninput=e=>{bgm.vol=e.target.value/100;bgmVol()};
+$('mpt').onclick=()=>$('mp').classList.toggle('min');
+if(innerWidth<700)$('mp').classList.add('min');
+bgmUI();
+/* tiny UI click on every button */
+document.addEventListener('pointerdown',e=>{if(e.target.closest&&e.target.closest('button'))sfx.ui()},true);
 
 /* ---------- Particle engine ---------- */
 const cv=$('fx'),cx=cv.getContext('2d');let P=[],run=false,last=0;
@@ -569,7 +696,7 @@ function click(r,c){if(performance.now()<suppressUntil||!canMoveNow())return;con
   if(m){const pc=S.b[sel.r][sel.c],fr=sel.r,fc=sel.c;
    if(pc.toLowerCase()=='p'&&(r==0||r==7))return askPromo(fr,fc,m);
    return exec(fr,fc,m,'Q')}}
- if(p&&isW(p)==(S.turn=='w')){sel={r,c,mv:legal(S.b,S.st,r,c)};tone(700,.05,'triangle',.06)}else sel=null;
+ if(p&&isW(p)==(S.turn=='w')){sel={r,c,mv:legal(S.b,S.st,r,c)};sfx.sel()}else sel=null;
  render()}
 function askPromo(r,c,m){const w=S.turn=='w';$('pbtn').innerHTML=['Q','R','B','N'].map(k=>`<button class="${w?'w':'b'}" data-k="${k}">${glyph(k)}</button>`).join('');
  $('promo').classList.add('on');$('pbtn').onclick=e=>{const k=e.target.closest('button');if(!k)return;$('promo').classList.remove('on');exec(r,c,m,k.dataset.k)}}
@@ -627,7 +754,7 @@ function onlineDice(color,mine,opp){const tk=++odTok;clearInterval(odIv);net.on=
  $('pl1').className=$('pl2').className='pl';$('roll').hidden=$('go').hidden=$('dback').hidden=true;
  $('dmsg').textContent=tr('rolling');$('dice').classList.add('on');face('d1',1);face('d2',1);
  $('d1').classList.add('roll');$('d2').classList.add('roll');
- let n=0;odIv=setInterval(()=>{if(tk!=odTok)return clearInterval(odIv);face('d1',d6());face('d2',d6());tone(rnd(250,600),.04,'square',.04);
+ let n=0;odIv=setInterval(()=>{if(tk!=odTok)return clearInterval(odIv);face('d1',d6());face('d2',d6());sfx.tick();
   if(++n>=14){clearInterval(odIv);face('d1',mine);face('d2',opp);$('d1').classList.remove('roll');$('d2').classList.remove('roll');
    const win=mine>opp,first=win?color:oc;$('pl'+(win?1:2)).classList.add('win');
    $('dmsg').innerHTML=tr(win?'o_win':'o_lose',mine,opp,tr(color=='w'?'white':'black'));
@@ -705,7 +832,7 @@ function openDice(){rolling=false;$('pl1').querySelector('span').textContent=tr(
  $('dmsg').textContent=tr('dice_msg');$('roll').hidden=false;$('go').hidden=true}
 function roll(){if(rolling||!$('dice').classList.contains('on'))return;rolling=true;$('roll').hidden=true;$('go').hidden=true;
  $('pl1').className=$('pl2').className='pl';$('dmsg').textContent=tr('rolling');$('d1').classList.add('roll');$('d2').classList.add('roll');
- let n=0;const iv=setInterval(()=>{face('d1',d6());face('d2',d6());tone(rnd(250,600),.04,'square',.04);if(++n>=14){clearInterval(iv);finish()}},90)}
+ let n=0;const iv=setInterval(()=>{face('d1',d6());face('d2',d6());sfx.tick();if(++n>=14){clearInterval(iv);finish()}},90)}
 function finish(){const a=d6(),b=d6();face('d1',a);face('d2',b);$('d1').classList.remove('roll');$('d2').classList.remove('roll');rolling=false;
  if(a==b){$('dmsg').textContent=tr('tie',a);tone(300,.3,'sawtooth',.08);setTimeout(roll,1400)}
  else{winner=a>b?1:2;$('pl'+winner).classList.add('win');$('dmsg').innerHTML=tr('wins_roll',winner,a,b,tr(winner==1?'white':'black'));rolling=true;tone(500,.2,'triangle',.1);setTimeout(()=>showResult(a,b),1000)}}
@@ -742,7 +869,7 @@ $('home').onclick=()=>{clearHost();showMenu()};
 $('newg').onclick=()=>{if(net.on)return toast(tr('newg_online'),2500);newGame()};
 $('undo').onclick=()=>{if(net.on||busy||!hist.length)return;aiTok++;clearFx();S=JSON.parse(hist.pop());if(vs&&S.turn=='b'&&hist.length)S=JSON.parse(hist.pop());sel=null;render();const tk=++tTok;setTimeout(()=>{if(tk==tTok)turnBanner()},250)};
 $('mode').onchange=newGame;
-$('snd').onclick=e=>{mute=!mute;e.target.textContent=tr(mute?'snd_off':'snd_on')};
+$('snd').onclick=e=>{mute=!mute;e.target.textContent=tr(mute?'snd_off':'snd_on');bgmSync()};
 (()=>{const L=[],dot=(x,y,k)=>L.push(`radial-gradient(circle calc(var(--s)*${k}) at ${x}% ${y}%,#fff3c4 0,#f0c75e 45%,#a87420 75%,#0000 82%)`);
  [[50,4.6],[50,95.4],[4.6,50],[95.4,50]].forEach(a=>dot(a[0],a[1],.02));
  [27,73].forEach(t=>{dot(t,4.6,.012);dot(t,95.4,.012);dot(4.6,t,.012);dot(95.4,t,.012)});
@@ -769,7 +896,7 @@ function dragMove(e){if(!drag||e.pointerId!==drag.id)return;
   if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
   if(!canMoveNow()){dragEnd();return}
   const{r,c}=drag,p=S.b[r][c];
-  sel={r,c,mv:legal(S.b,S.st,r,c)};tone(700,.05,'triangle',.06);render();
+  sel={r,c,mv:legal(S.b,S.st,r,c)};sfx.sel();render();
   const o=SQ[r][c].querySelector('.p');if(o)o.style.opacity='.25';
   const sz=boardEl.getBoundingClientRect().width/8,g=document.createElement('div');
   g.className='dg';g.innerHTML=`<span class="p ${isW(p)?'w':'b'}" style="font-size:${sz*.78}px">${glyph(p)}</span>`;
