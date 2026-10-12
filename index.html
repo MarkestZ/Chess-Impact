@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chess Impact – หมากรุกสากล</title>
+<title>Chess Impact – International Chess</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0e1420;--panel:#18212f;--ink:#e9eef7;--mute:#8a97ad;--lt:linear-gradient(135deg,#f3e6bd,#dcc58a);--dk:linear-gradient(135deg,#6a4226,#3b2112);--gold:#f4b942;--red:#ff4d5e;--s:min(94vw,calc(100vh - 290px),700px);--b:calc(var(--s)*.82);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:dark}
@@ -42,10 +42,30 @@ h1{margin:0;font-size:clamp(18px,4.5vw,26px);font-weight:800;letter-spacing:.5px
 .p.b{color:#1a1208;-webkit-text-stroke:2px #e8b94a;paint-order:stroke fill;text-shadow:0 2px 4px #000a,0 0 8px #f4b94266}
 .sq:hover .p{transform:translateY(-2px) scale(1.06)}
 .dead .p{transform:rotate(80deg) translateY(25%)!important;filter:grayscale(1) brightness(.6);transition:transform 1s}
-.btns{display:flex;gap:8px}
-button{font:600 14px 'Prompt',sans-serif;color:var(--ink);background:var(--panel);border:1px solid #2f3d58;padding:8px 16px;border-radius:10px;cursor:pointer}
-select{font:600 14px 'Prompt',sans-serif;color:var(--ink);background:var(--panel);border:1px solid #2f3d58;padding:8px 10px;border-radius:10px;cursor:pointer}
+.btns{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
+button{font:600 14px 'Prompt',system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid #2f3d58;padding:8px 16px;border-radius:10px;cursor:pointer}
+select{font:600 14px 'Prompt',system-ui,sans-serif;color:var(--ink);background:var(--panel);border:1px solid #2f3d58;padding:8px 10px;border-radius:10px;cursor:pointer}
 [hidden]{display:none!important}
+#board{touch-action:none}
+.sq.hov{box-shadow:inset 0 0 0 4px #f4b942}
+.dg{position:fixed;left:0;top:0;z-index:58;pointer-events:none;line-height:1;will-change:transform;filter:drop-shadow(0 10px 12px #000a)}
+#chatbtn{position:fixed;right:12px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:76;width:52px;height:52px;padding:0;border-radius:50%;font-size:24px;line-height:1;background:var(--gold);color:#2a1a00;border:0;box-shadow:0 6px 18px #000a}
+#chatbtn:hover{background:#ffcf6b}
+#chatbadge{position:absolute;top:-4px;right:-4px;min-width:20px;height:20px;padding:0 5px;border-radius:99px;background:var(--red);color:#fff;font:800 12px/20px 'Prompt',system-ui,sans-serif;text-align:center}
+#chat{position:fixed;right:12px;bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:77;width:min(340px,calc(100vw - 24px));height:min(62vh,420px);display:flex;flex-direction:column;background:#18212ff2;border:1px solid #2f3d58;border-radius:16px;box-shadow:0 16px 48px #000c;overflow:hidden}
+.ch-h{display:flex;justify-content:space-between;align-items:center;padding:8px 8px 8px 14px;font-weight:800;border-bottom:1px solid #2f3d58}
+#chatx{padding:2px 10px;border:0;background:none;font-size:18px}
+#chatlog{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:6px;min-height:0}
+#chatlog .m{max-width:82%;padding:6px 11px;border-radius:14px;font-size:14px;line-height:1.45;word-break:break-word;white-space:pre-wrap}
+#chatlog .me{align-self:flex-end;background:var(--gold);color:#2a1a00;border-bottom-right-radius:4px}
+#chatlog .th{align-self:flex-start;background:#243350;border-bottom-left-radius:4px}
+#chatlog .e{margin:auto;color:var(--mute);text-align:center;font-size:13px;padding:0 10px}
+.ch-f{display:flex;gap:8px;padding:10px;border-top:1px solid #2f3d58}
+#chatin{flex:1;min-width:0;padding:9px 12px;border-radius:10px;border:1px solid #2f3d58;background:var(--bg);color:var(--ink);font:600 16px 'Prompt',system-ui,sans-serif}
+#chatin:focus{outline:none;border-color:var(--gold)}
+#chatsend{background:var(--gold);color:#2a1a00;border:0}
+body:has(#dice.on,#menu.on,#online.on) :is(#chatbtn,#chat){display:none}
+.langmenu{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:12px;z-index:5}
 #menu{position:fixed;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:20px;background:radial-gradient(ellipse at 50% 25%,#22345a,#0a0f1a 75%);text-align:center;overflow:hidden}
 #menu.on{display:flex}
 #menu .bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
@@ -163,8 +183,8 @@ button:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
 #promo div{display:flex;gap:10px}
 #promo button{font-size:56px;line-height:1;padding:10px 16px;background:#243350;border-color:var(--gold)}
 #promo button{-webkit-text-stroke:2px #e8b94a;paint-order:stroke fill}#promo button.w{color:#fff6dc}#promo button.b{color:#1a1208;background:#3a2a14}
-@media (max-width:500px){.btns button{padding:6px 10px;font-size:13px}}
-/* สไตล์สำหรับไอคอนที่อยู่ตรงกลางข้อความ */
+@media (max-width:500px){.btns button{padding:6px 10px;font-size:13px}.btns select{padding:6px 6px;font-size:13px}}
+/* Style for the icon inside the heading */
 h1 .inline-icon {
   height: 0.9em;
   width: auto;
@@ -198,57 +218,65 @@ h1 .inline-icon {
 <body>
 <header>
   <h1>Chess Impact</h1>
-  <div id="turn"><i></i><span>ตาขาว</span></div>
+  <div id="turn"><i></i><span>White's turn</span></div>
 </header>
 <div class="tray" id="capTop"></div>
 <div id="wrap"><div id="frame"><div id="in"><div id="studs"></div><div id="board"></div></div></div></div>
 <div class="tray" id="capBot"></div>
-<div id="ml" aria-label="ประวัติการเดิน"></div>
+<div id="ml" aria-label="Move history" data-i18n-aria="mlaria"></div>
 <div class="btns">
-  <button id="home">เมนูหลัก</button>
-  <select id="mode" hidden aria-label="โหมดเกม"><option value="0">2 ผู้เล่น</option><option value="1">สู้คอม · ง่าย</option><option value="2" selected>สู้คอม · กลาง</option><option value="3">สู้คอม · ยาก</option><option value="4">สู้คอม · เซียน</option></select>
-  <button id="undo">ย้อนกลับ</button>
-  <button id="newg">เกมใหม่</button>
-  <button id="snd">เสียง: เปิด</button>
+  <button id="home" data-i18n="home">Main Menu</button>
+  <select id="mode" hidden aria-label="Game mode" data-i18n-aria="modearia"><option value="0" data-i18n="m_2p">2 Players</option><option value="1" data-i18n="m_e">vs Computer · Easy</option><option value="2" selected data-i18n="m_m">vs Computer · Medium</option><option value="3" data-i18n="m_h">vs Computer · Hard</option><option value="4" data-i18n="m_x">vs Computer · Master</option></select>
+  <button id="undo" data-i18n="undo">Undo</button>
+  <button id="newg" data-i18n="newg">New Game</button>
+  <button id="snd">Sound: On</button>
+  <select id="lang" aria-label="Language" data-i18n-aria="langaria"><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option><option value="th">ไทย</option></select>
 </div>
 <div id="menu" class="on">
+  <select id="lang2" class="langmenu" aria-label="Language" data-i18n-aria="langaria"><option value="en">English</option><option value="zh">中文</option><option value="ja">日本語</option><option value="th">ไทย</option></select>
   <div class="bg"><span style="left:6%;animation-delay:0s">♞</span><span style="left:22%;animation-delay:-5s">♜</span><span style="left:40%;animation-delay:-9s">♛</span><span style="left:58%;animation-delay:-2s">♝</span><span style="left:74%;animation-delay:-7s">♚</span><span style="left:90%;animation-delay:-11s">♟︎</span></div>
   <div class="logo" id="logo"><div class="aura"></div><div class="rays"></div><div class="floor"></div><div id="pcs"></div><div class="flash"></div><div class="star"></div><div class="ring"></div><div class="ring b"></div></div>
   <h1>Chess <img src="icon.png" class="inline-icon" alt="Chess Impact Icon"> Impact</h1>
-  <div class="v" id="m1"><p>เลือกโหมดการเล่น</p>
+  <div class="v" id="m1"><p data-i18n="pickmode">Choose a game mode</p>
     <div class="row">
-      <button class="card" data-a="0"><em>♟︎♟︎</em><b>เล่นกับคน</b><small>สองคนผลัดกันเดินในเครื่องเดียว</small></button>
-      <button class="card" data-a="online"><em>♜</em><b>เล่นออนไลน์</b><small>สร้างห้องส่วนตัว แล้วส่งรหัสให้เพื่อน</small></button>
-      <button class="card" data-a="ai"><em>♞</em><b>เล่นกับคอมพิวเตอร์</b><small>คุณเป็นฝ่ายขาว ท้าสู้กับ AI</small></button>
+      <button class="card" data-a="0"><em>♟︎♟︎</em><b data-i18n="c_pvp">Play with a friend</b><small data-i18n="c_pvp_s">Two players take turns on one device</small></button>
+      <button class="card" data-a="online"><em>♜</em><b data-i18n="c_online">Play online</b><small data-i18n="c_online_s">Create a private room and share the code with a friend</small></button>
+      <button class="card" data-a="ai"><em>♞</em><b data-i18n="c_ai">Play vs computer</b><small data-i18n="c_ai_s">You play White against the AI</small></button>
     </div></div>
-  <div class="v" id="m2" hidden><p>เลือกระดับความยาก</p>
+  <div class="v" id="m2" hidden><p data-i18n="pickdiff">Choose difficulty</p>
     <div class="row">
-      <button class="card sm" data-a="1"><em>♙</em><b>ง่าย</b><small>พลาดบ่อย เหมาะกับมือใหม่</small></button>
-      <button class="card sm" data-a="2"><em>♘</em><b>กลาง</b><small>รอบคอบ เห็นกับดักระยะสั้น</small></button>
-      <button class="card sm" data-a="3"><em>♛</em><b>ยาก</b><small>คิดลึก ใช้เวลา ~2 วินาที</small></button>
-      <button class="card sm" data-a="4"><em>♚</em><b>เซียน</b><small>คิดลึกที่สุด ~5 วินาที</small></button>
+      <button class="card sm" data-a="1"><em>♙</em><b data-i18n="d_e">Easy</b><small data-i18n="d_e_s">Makes frequent mistakes, great for beginners</small></button>
+      <button class="card sm" data-a="2"><em>♘</em><b data-i18n="d_m">Medium</b><small data-i18n="d_m_s">Careful, spots short-term traps</small></button>
+      <button class="card sm" data-a="3"><em>♛</em><b data-i18n="d_h">Hard</b><small data-i18n="d_h_s">Thinks deeper, takes ~2 seconds</small></button>
+      <button class="card sm" data-a="4"><em>♚</em><b data-i18n="d_x">Master</b><small data-i18n="d_x_s">Deepest thinking, ~5 seconds</small></button>
     </div>
-    <button class="link" data-a="back">ย้อนกลับ</button></div>
+    <button class="link" data-a="back" data-i18n="back">Back</button></div>
 </div>
 <div id="dice">
-  <h2>ทอยลูกเต๋า</h2>
+  <h2 data-i18n="dice_h">Roll the Dice</h2>
   <p id="dmsg"></p>
-  <div class="row"><div class="pl" id="pl1"><span>ผู้เล่น 1 · ขาว ♔</span><div class="die" id="d1"></div></div><div class="pl" id="pl2"><span>ผู้เล่น 2 · ดำ ♚</span><div class="die" id="d2"></div></div></div>
-  <button class="go" id="roll">ทอยลูกเต๋า</button>
-  <button class="go" id="go" hidden>เริ่มเล่น</button>
-  <button class="link" id="dback">ย้อนกลับ</button>
+  <div class="row"><div class="pl" id="pl1"><span data-i18n="p1w">Player 1 · White ♔</span><div class="die" id="d1"></div></div><div class="pl" id="pl2"><span data-i18n="p2b">Player 2 · Black ♚</span><div class="die" id="d2"></div></div></div>
+  <button class="go" id="roll" data-i18n="dice_h">Roll the Dice</button>
+  <button class="go" id="go" hidden data-i18n="startplay">Start Playing</button>
+  <button class="link" id="dback" data-i18n="back">Back</button>
 </div>
 <div id="online">
-  <h2>เล่นออนไลน์</h2>
+  <h2 data-i18n="online_h">Play Online</h2>
   <p id="omsg"></p>
-  <div id="ohome" class="row"><button class="go" id="ocreate">สร้างห้อง</button><button class="go" id="ojoin">เข้าร่วมห้อง</button><button class="go" id="ores" hidden></button></div>
-  <div id="ocode" hidden><div id="code"></div><button id="ocopy">คัดลอกรหัส</button></div>
-  <div id="ojoinbox" class="row" hidden><input id="jin" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="รหัสห้อง" aria-label="รหัสห้อง"><button class="go" id="jgo">เข้าห้อง</button></div>
-  <button class="link" id="oback">ย้อนกลับ</button>
+  <div id="ohome" class="row"><button class="go" id="ocreate" data-i18n="create">Create Room</button><button class="go" id="ojoin" data-i18n="joinroom">Join Room</button><button class="go" id="ores" hidden></button></div>
+  <div id="ocode" hidden><div id="code"></div><button id="ocopy" data-i18n="copycode">Copy code</button></div>
+  <div id="ojoinbox" class="row" hidden><input id="jin" maxlength="5" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Room code" aria-label="Room code" data-i18n-ph="roomcode" data-i18n-aria="roomcode"><button class="go" id="jgo" data-i18n="enter">Enter</button></div>
+  <button class="link" id="oback" data-i18n="back">Back</button>
+</div>
+<button id="chatbtn" hidden aria-label="Chat" data-i18n-aria="chat_h">💬<b id="chatbadge" hidden>0</b></button>
+<div id="chat" hidden>
+  <div class="ch-h"><span data-i18n="chat_h">Chat</span><button id="chatx" aria-label="Chat" data-i18n-aria="chat_h">✕</button></div>
+  <div id="chatlog"></div>
+  <div class="ch-f"><input id="chatin" maxlength="200" autocomplete="off" placeholder="Type a message…" data-i18n-ph="chat_ph"><button id="chatsend" data-i18n="chat_send">Send</button></div>
 </div>
 <div id="toast" hidden></div>
-<div id="res"><div id="rcrown"></div><div id="rsc"></div><h3 id="rwho"></h3><p id="rsub"></p><div class="tap" id="rtap">กดเพื่อเริ่มเกม</div><div class="rlinks"><button class="link" id="rview" hidden>ดูกระดาน</button><button class="link" id="rmenu" hidden>เมนูหลัก</button></div></div>
-<div id="promo"><b style="font-size:24px;color:#fff">เลือกหมากที่จะเลื่อนขั้น</b><div id="pbtn"></div></div>
+<div id="res"><div id="rcrown"></div><div id="rsc"></div><h3 id="rwho"></h3><p id="rsub"></p><div class="tap" id="rtap">Tap to start the game</div><div class="rlinks"><button class="link" id="rview" hidden data-i18n="viewboard">View board</button><button class="link" id="rmenu" hidden data-i18n="home">Main Menu</button></div></div>
+<div id="promo"><b style="font-size:24px;color:#fff" data-i18n="promo_pick">Choose a piece to promote to</b><div id="pbtn"></div></div>
 <canvas id="fx"></canvas>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
@@ -257,6 +285,15 @@ const $=id=>document.getElementById(id);
 const G={K:'♚',Q:'♛',R:'♜',B:'♝',N:'♞',P:'♟'},V={p:1,n:3,b:3,r:5,q:9,k:0};
 const glyph=p=>G[p.toUpperCase()]+'\uFE0E';
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const I18N={"en": {"title": "Chess Impact – International Chess", "mlaria": "Move history", "modearia": "Game mode", "langaria": "Language", "home": "Main Menu", "undo": "Undo", "newg": "New Game", "snd_on": "Sound: On", "snd_off": "Sound: Off", "m_2p": "2 Players", "m_e": "vs Computer · Easy", "m_m": "vs Computer · Medium", "m_h": "vs Computer · Hard", "m_x": "vs Computer · Master", "pickmode": "Choose a game mode", "c_pvp": "Play with a friend", "c_pvp_s": "Two players take turns on one device", "c_online": "Play online", "c_online_s": "Create a private room and share the code with a friend", "c_ai": "Play vs computer", "c_ai_s": "You play White against the AI", "pickdiff": "Choose difficulty", "d_e": "Easy", "d_e_s": "Makes frequent mistakes, great for beginners", "d_m": "Medium", "d_m_s": "Careful, spots short-term traps", "d_h": "Hard", "d_h_s": "Thinks deeper, takes ~2 seconds", "d_x": "Master", "d_x_s": "Deepest thinking, ~5 seconds", "back": "Back", "dice_h": "Roll the Dice", "dice_msg": "Player 1 plays White · Player 2 plays Black — the higher roll moves first", "p1w": "Player 1 · White ♔", "p2b": "Player 2 · Black ♚", "startplay": "Start Playing", "rolling": "Rolling…", "tie": "Both rolled {0}! Rolling again…", "wins_roll": "Player {0} rolled higher ({1} to {2})<br>Plays {3} and moves first", "first_h": "Player {0} goes first!", "first_sub": "Player {0} plays {1} and moves first", "tapstart": "Tap to start the game", "playagain": "Play again", "viewboard": "View board", "online_h": "Play Online", "create": "Create Room", "joinroom": "Join Room", "copycode": "Copy code", "roomcode": "Room code", "enter": "Enter", "resume": "Resume room {0}", "o_home": "Create a room and send the code to a friend, or enter a friend's room code", "o_host": "Send this code to your friend, then wait for them to join…", "o_join": "Enter the 5-character room code", "o_noload": "Couldn't load the online system. Check your internet connection and try again.", "o_srv": "Couldn't reach the server. Please try again.", "o_noroom": "Saved room not found", "o_restoring": "Restoring room {0}…", "o_restorefail": "Couldn't restore the room. Please try again.", "o_len": "Room code must be 5 characters", "o_conn": "Connecting…", "o_failconn": "Connection failed. Check the room code and try again.", "o_notfound": "Room not found. Check the code again.", "copied": "Code copied", "youplay_first": "You play {0} · You move first", "youplay_second": "You play {0} · Opponent moves first", "rematch_gone": "Opponent left the room — press \"Main Menu\"", "lost_host": "Opponent disconnected — waiting for them to reconnect… (or press \"Main Menu\" to leave)", "retry_fail": "Couldn't reconnect — press \"Main Menu\" to leave", "reconnecting": "Connection lost, reconnecting…", "synced": "Reconnected ✓ Game synced", "opp_back": "Opponent is back ✓", "resumed": "Room {0} restored — waiting for your opponent to reconnect…", "newg_online": "Online: press Play again after the game ends", "you_p": "You · {0}", "opp_p": "Opponent · {0}", "o_win": "You rolled higher ({0} to {1})<br>You move first · You play {2}", "o_lose": "Opponent rolled higher ({0} to {1})<br>Opponent moves first · You play {2}", "white": "White", "black": "Black", "white_g": "White ♔", "black_g": "Black ♚", "turn_w": "White's turn", "turn_b": "Black's turn", "pl_n": "Player {0}", "yourturn": "Your turn", "cpu": "Computer", "mate": "Checkmate! {0} wins", "draw": "Draw", "yourt": " · Your turn", "wait_opp": " · Waiting for opponent", "incheck": " · In check!", "thinking": "Computer is thinking…", "mlempty": "No moves yet — your moves will appear here", "b_queen": "Queen eliminated!", "b_queen_s": "The executioner strikes", "b_rook": "Rook crumbles!", "b_promo": "Promotion!", "b_promo_s": "Pawn becomes {0}", "b_check": "Check!", "dr_stale": "Stalemate — no legal moves", "dr_insuf": "Insufficient material to checkmate", "dr_50": "50 moves without a capture or pawn move", "dr_rep": "Same position repeated 3 times", "ckm": "CHECKMATE", "you_win": "You win!", "opp_win": "Opponent wins!", "pwin": "Player {0} wins!", "cpu_win": "Computer wins!", "side_win": "{0} wins!", "end_sub": "{0} · Checkmate", "promo_pick": "Choose a piece to promote to"}, "zh": {"title": "Chess Impact – 国际象棋", "mlaria": "走棋记录", "modearia": "游戏模式", "langaria": "语言", "home": "主菜单", "undo": "悔棋", "newg": "新游戏", "snd_on": "声音：开", "snd_off": "声音：关", "m_2p": "双人对战", "m_e": "对战电脑 · 简单", "m_m": "对战电脑 · 中等", "m_h": "对战电脑 · 困难", "m_x": "对战电脑 · 大师", "pickmode": "选择游戏模式", "c_pvp": "与好友对战", "c_pvp_s": "两人在同一设备上轮流走棋", "c_online": "在线对战", "c_online_s": "创建私人房间，把房间码发给好友", "c_ai": "对战电脑", "c_ai_s": "你执白棋，挑战 AI", "pickdiff": "选择难度", "d_e": "简单", "d_e_s": "经常失误，适合新手", "d_m": "中等", "d_m_s": "谨慎，能看穿短期陷阱", "d_h": "困难", "d_h_s": "深度思考，约需 2 秒", "d_x": "大师", "d_x_s": "思考最深，约需 5 秒", "back": "返回", "dice_h": "掷骰子", "dice_msg": "玩家 1 执白棋 · 玩家 2 执黑棋——点数大者先走", "p1w": "玩家 1 · 白方 ♔", "p2b": "玩家 2 · 黑方 ♚", "startplay": "开始游戏", "rolling": "正在掷骰子…", "tie": "双方都掷出了 {0}！重新掷…", "wins_roll": "玩家 {0} 点数更大（{1} 比 {2}）<br>执{3}并先走", "first_h": "玩家 {0} 先手！", "first_sub": "玩家 {0} 执{1}，先走", "tapstart": "点击开始游戏", "playagain": "再来一局", "viewboard": "查看棋盘", "online_h": "在线对战", "create": "创建房间", "joinroom": "加入房间", "copycode": "复制房间码", "roomcode": "房间码", "enter": "进入", "resume": "继续房间 {0}", "o_home": "创建房间并把房间码发给好友，或输入好友的房间码", "o_host": "把这个房间码发给好友，然后等待好友加入…", "o_join": "输入 5 位房间码", "o_noload": "无法加载在线系统，请检查网络后重试", "o_srv": "无法连接服务器，请重试", "o_noroom": "未找到之前的房间", "o_restoring": "正在恢复房间 {0}…", "o_restorefail": "恢复房间失败，请重试", "o_len": "房间码必须是 5 个字符", "o_conn": "正在连接…", "o_failconn": "连接失败，请检查房间码后重试", "o_notfound": "找不到该房间，请再检查房间码", "copied": "已复制房间码", "youplay_first": "你执{0} · 你先走", "youplay_second": "你执{0} · 对手先走", "rematch_gone": "对手已离开房间——请点击“主菜单”", "lost_host": "对手断线——正在等待其重新连接…（或点击“主菜单”退出）", "retry_fail": "重新连接失败——请点击“主菜单”退出", "reconnecting": "连接已断开，正在重新连接…", "synced": "已重新连接 ✓ 游戏已同步", "opp_back": "对手已回来 ✓", "resumed": "房间 {0} 已恢复——等待对手重新加入…", "newg_online": "在线模式：对局结束后请点击“再来一局”", "you_p": "你 · {0}", "opp_p": "对手 · {0}", "o_win": "你的点数更大（{0} 比 {1}）<br>你先走 · 你执{2}", "o_lose": "对手点数更大（{0} 比 {1}）<br>对手先走 · 你执{2}", "white": "白方", "black": "黑方", "white_g": "白方 ♔", "black_g": "黑方 ♚", "turn_w": "白方回合", "turn_b": "黑方回合", "pl_n": "玩家 {0}", "yourturn": "轮到你", "cpu": "电脑", "mate": "将死！{0}获胜", "draw": "和棋", "yourt": " · 你的回合", "wait_opp": " · 等待对手", "incheck": " · 被将军！", "thinking": "电脑思考中…", "mlempty": "尚无走棋——走棋后会显示在这里", "b_queen": "皇后被消灭！", "b_queen_s": "刽子手挥下利刃", "b_rook": "车轰然倒塌！", "b_promo": "升变！", "b_promo_s": "兵升变为 {0}", "b_check": "将军！", "dr_stale": "逼和——无合法着法", "dr_insuf": "子力不足，无法将死", "dr_50": "50 步内无吃子且无兵移动", "dr_rep": "同一局面重复三次", "ckm": "将死", "you_win": "你赢了！", "opp_win": "对手获胜！", "pwin": "玩家 {0} 获胜！", "cpu_win": "电脑获胜！", "side_win": "{0}获胜！", "end_sub": "{0} · 将死", "promo_pick": "选择升变的棋子"}, "ja": {"title": "Chess Impact – チェス", "mlaria": "指し手の履歴", "modearia": "ゲームモード", "langaria": "言語", "home": "メインメニュー", "undo": "一手戻す", "newg": "新しいゲーム", "snd_on": "サウンド：オン", "snd_off": "サウンド：オフ", "m_2p": "2人対戦", "m_e": "コンピュータ戦 · かんたん", "m_m": "コンピュータ戦 · ふつう", "m_h": "コンピュータ戦 · むずかしい", "m_x": "コンピュータ戦 · マスター", "pickmode": "ゲームモードを選択", "c_pvp": "友達と対戦", "c_pvp_s": "1台の端末で交互に指します", "c_online": "オンライン対戦", "c_online_s": "プライベートルームを作り、コードを友達に送ろう", "c_ai": "コンピュータと対戦", "c_ai_s": "あなたは白番でAIに挑戦", "pickdiff": "難易度を選択", "d_e": "かんたん", "d_e_s": "ミスが多く、初心者向け", "d_m": "ふつう", "d_m_s": "慎重で、短期的な罠も見抜く", "d_h": "むずかしい", "d_h_s": "深く読む。約2秒", "d_x": "マスター", "d_x_s": "最も深く読む。約5秒", "back": "戻る", "dice_h": "サイコロを振る", "dice_msg": "プレイヤー1が白、プレイヤー2が黒。出目が大きい方が先手です", "p1w": "プレイヤー1 · 白 ♔", "p2b": "プレイヤー2 · 黒 ♚", "startplay": "ゲーム開始", "rolling": "振っています…", "tie": "2人とも{0}！もう一度振ります…", "wins_roll": "プレイヤー{0}の出目が大きい（{1}対{2}）<br>{3}番で先手です", "first_h": "プレイヤー{0}が先手！", "first_sub": "プレイヤー{0}は{1}、先手です", "tapstart": "タップしてゲーム開始", "playagain": "もう一度", "viewboard": "盤面を見る", "online_h": "オンライン対戦", "create": "ルームを作る", "joinroom": "ルームに参加", "copycode": "コードをコピー", "roomcode": "ルームコード", "enter": "入室", "resume": "ルーム{0}を再開", "o_home": "ルームを作ってコードを友達に送るか、友達のコードを入力してください", "o_host": "このコードを友達に送り、参加を待ちましょう…", "o_join": "5文字のルームコードを入力", "o_noload": "オンライン機能を読み込めませんでした。接続を確認してもう一度お試しください。", "o_srv": "サーバーに接続できません。もう一度お試しください。", "o_noroom": "以前のルームが見つかりません", "o_restoring": "ルーム{0}を復元中…", "o_restorefail": "ルームを復元できませんでした。もう一度お試しください。", "o_len": "ルームコードは5文字です", "o_conn": "接続中…", "o_failconn": "接続に失敗しました。コードを確認してもう一度お試しください。", "o_notfound": "ルームが見つかりません。コードをもう一度確認してください。", "copied": "コードをコピーしました", "youplay_first": "あなたは{0} · 先手", "youplay_second": "あなたは{0} · 相手が先手", "rematch_gone": "相手が退室しました。「メインメニュー」を押してください", "lost_host": "相手の接続が切れました。再接続を待っています…（「メインメニュー」で退出できます）", "retry_fail": "再接続できませんでした。「メインメニュー」で退出してください", "reconnecting": "接続が切れました。再接続中…", "synced": "再接続しました ✓ ゲームを同期しました", "opp_back": "相手が戻りました ✓", "resumed": "ルーム{0}を復元しました。相手の再接続を待っています…", "newg_online": "オンライン：ゲーム終了後に「もう一度」を押してください", "you_p": "あなた · {0}", "opp_p": "相手 · {0}", "o_win": "あなたの出目が大きい（{0}対{1}）<br>あなたが先手 · あなたは{2}番", "o_lose": "相手の出目が大きい（{0}対{1}）<br>相手が先手 · あなたは{2}番", "white": "白", "black": "黒", "white_g": "白 ♔", "black_g": "黒 ♚", "turn_w": "白の番", "turn_b": "黒の番", "pl_n": "プレイヤー{0}", "yourturn": "あなたの番", "cpu": "コンピュータ", "mate": "チェックメイト！{0}の勝ち", "draw": "引き分け", "yourt": " · あなたの番", "wait_opp": " · 相手を待っています", "incheck": " · チェック！", "thinking": "コンピュータが考え中…", "mlempty": "まだ指し手がありません。指すとここに表示されます", "b_queen": "クイーン撃破！", "b_queen_s": "処刑人の一撃", "b_rook": "ルークが崩れ落ちた！", "b_promo": "プロモーション！", "b_promo_s": "ポーンが{0}に成った", "b_check": "チェック！", "dr_stale": "ステイルメイト（合法手なし）", "dr_insuf": "駒不足でチェックメイト不可能", "dr_50": "50手の間、駒の捕獲もポーンの移動もなし", "dr_rep": "同一局面が3回繰り返された", "ckm": "チェックメイト", "you_win": "あなたの勝ち！", "opp_win": "相手の勝ち！", "pwin": "プレイヤー{0}の勝ち！", "cpu_win": "コンピュータの勝ち！", "side_win": "{0}の勝ち！", "end_sub": "{0} · チェックメイト", "promo_pick": "昇格する駒を選んでください"}};
+I18N.th={"title": "Chess Impact – หมากรุกสากล", "mlaria": "ประวัติการเดิน", "modearia": "โหมดเกม", "langaria": "ภาษา", "home": "เมนูหลัก", "undo": "ย้อนกลับ", "newg": "เกมใหม่", "snd_on": "เสียง: เปิด", "snd_off": "เสียง: ปิด", "m_2p": "2 ผู้เล่น", "m_e": "สู้คอม · ง่าย", "m_m": "สู้คอม · กลาง", "m_h": "สู้คอม · ยาก", "m_x": "สู้คอม · เซียน", "pickmode": "เลือกโหมดการเล่น", "c_pvp": "เล่นกับคน", "c_pvp_s": "สองคนผลัดกันเดินในเครื่องเดียว", "c_online": "เล่นออนไลน์", "c_online_s": "สร้างห้องส่วนตัว แล้วส่งรหัสให้เพื่อน", "c_ai": "เล่นกับคอมพิวเตอร์", "c_ai_s": "คุณเป็นฝ่ายขาว ท้าสู้กับ AI", "pickdiff": "เลือกระดับความยาก", "d_e": "ง่าย", "d_e_s": "พลาดบ่อย เหมาะกับมือใหม่", "d_m": "กลาง", "d_m_s": "รอบคอบ เห็นกับดักระยะสั้น", "d_h": "ยาก", "d_h_s": "คิดลึก ใช้เวลา ~2 วินาที", "d_x": "เซียน", "d_x_s": "คิดลึกที่สุด ~5 วินาที", "back": "ย้อนกลับ", "dice_h": "ทอยลูกเต๋า", "dice_msg": "ผู้เล่น 1 เป็นฝ่ายขาว · ผู้เล่น 2 เป็นฝ่ายดำ — ใครทอยได้แต้มมากกว่าจะได้เดินก่อน", "p1w": "ผู้เล่น 1 · ขาว ♔", "p2b": "ผู้เล่น 2 · ดำ ♚", "startplay": "เริ่มเล่น", "rolling": "กำลังทอย…", "tie": "ทั้งสองคนทอยได้ {0} เท่ากัน! ทอยใหม่…", "wins_roll": "ผู้เล่น {0} ได้แต้มมากกว่า ({1} ต่อ {2})<br>เล่นฝ่าย{3} และเดินก่อน", "first_h": "ผู้เล่น {0} ได้เริ่มก่อน!", "first_sub": "ผู้เล่น {0} เล่นฝ่าย{1} และเดินก่อน", "tapstart": "กดเพื่อเริ่มเกม", "playagain": "เล่นอีกครั้ง", "viewboard": "ดูกระดาน", "online_h": "เล่นออนไลน์", "create": "สร้างห้อง", "joinroom": "เข้าร่วมห้อง", "copycode": "คัดลอกรหัส", "roomcode": "รหัสห้อง", "enter": "เข้าห้อง", "resume": "ต่อห้องเดิม {0}", "o_home": "สร้างห้องแล้วส่งรหัสให้เพื่อน หรือใส่รหัสห้องของเพื่อน", "o_host": "ส่งรหัสนี้ให้เพื่อน แล้วรอเพื่อนเข้าห้อง…", "o_join": "ใส่รหัสห้อง 5 ตัวอักษร", "o_noload": "โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่", "o_srv": "เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง", "o_noroom": "ไม่พบห้องเดิม", "o_restoring": "กำลังกู้ห้อง {0}…", "o_restorefail": "กู้ห้องไม่สำเร็จ ลองใหม่อีกครั้ง", "o_len": "รหัสห้องต้องมี 5 ตัวอักษร", "o_conn": "กำลังเชื่อมต่อ…", "o_failconn": "เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสห้องแล้วลองใหม่", "o_notfound": "ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง", "copied": "คัดลอกรหัสแล้ว", "youplay_first": "คุณเล่นฝ่าย{0} · เดินก่อน", "youplay_second": "คุณเล่นฝ่าย{0} · คู่แข่งเดินก่อน", "rematch_gone": "คู่แข่งออกจากห้องแล้ว — กด \"เมนูหลัก\"", "lost_host": "คู่แข่งหลุดการเชื่อมต่อ — กำลังรอเชื่อมต่อใหม่… (หรือกด \"เมนูหลัก\" เพื่อออก)", "retry_fail": "เชื่อมต่อใหม่ไม่สำเร็จ — กด \"เมนูหลัก\" เพื่อออก", "reconnecting": "หลุดการเชื่อมต่อ กำลังเชื่อมต่อใหม่…", "synced": "เชื่อมต่อใหม่แล้ว ✓ ซิงก์เกมเรียบร้อย", "opp_back": "คู่แข่งกลับมาแล้ว ✓", "resumed": "กู้ห้อง {0} แล้ว — รอคู่แข่งต่อกลับเข้ามา…", "newg_online": "ออนไลน์: กดเล่นอีกครั้งหลังจบเกม", "you_p": "คุณ · {0}", "opp_p": "คู่แข่ง · {0}", "o_win": "คุณทอยได้แต้มมากกว่า ({0} ต่อ {1})<br>คุณเดินก่อน · คุณเล่นฝ่าย{2}", "o_lose": "คู่แข่งทอยได้แต้มมากกว่า ({0} ต่อ {1})<br>คู่แข่งเดินก่อน · คุณเล่นฝ่าย{2}", "white": "ขาว", "black": "ดำ", "white_g": "ขาว ♔", "black_g": "ดำ ♚", "turn_w": "ตาขาว", "turn_b": "ตาดำ", "pl_n": "ผู้เล่น {0}", "yourturn": "ตาของคุณ", "cpu": "คอมพิวเตอร์", "mate": "รุกฆาต! {0}ชนะ", "draw": "เสมอ", "yourt": " · ตาคุณ", "wait_opp": " · รอคู่แข่ง", "incheck": " · ถูกเช็ค!", "thinking": "คอมกำลังคิด…", "mlempty": "ยังไม่มีการเดิน — เดินหมากแล้วจะแสดงตรงนี้", "b_queen": "ราชินีถูกกำจัด!", "b_queen_s": "เพชฌฆาตลงดาบ", "b_rook": "ป้อมพังทลาย!", "b_promo": "เลื่อนขั้น!", "b_promo_s": "เบี้ยกลายเป็น {0}", "b_check": "เช็ค!", "dr_stale": "ไม่มีทางเดินที่ถูกกติกา (Stalemate)", "dr_insuf": "เหลือหมากน้อยเกินกว่าจะรุกฆาตได้ (King vs King)", "dr_50": "เดินครบ 50 ตาโดยไม่กินหมากและไม่เดินเบี้ย", "dr_rep": "ตำแหน่งเดิมซ้ำครบ 3 ครั้ง", "ckm": "CHECKMATE", "you_win": "คุณชนะ!", "opp_win": "คู่แข่งชนะ!", "pwin": "ผู้เล่น {0} ชนะ!", "cpu_win": "คอมพิวเตอร์ชนะ!", "side_win": "ฝ่าย{0}ชนะ!", "end_sub": "ฝ่าย{0} · รุกฆาตสำเร็จ", "promo_pick": "เลือกหมากที่จะเลื่อนขั้น"};
+Object.assign(I18N.en,{"chat_h": "Chat", "chat_ph": "Type a message…", "chat_send": "Send", "chat_empty": "No messages yet — say hi to your opponent!", "chat_off": "Can't send — you're not connected to your opponent"});
+Object.assign(I18N.zh,{"chat_h": "聊天", "chat_ph": "输入消息…", "chat_send": "发送", "chat_empty": "还没有消息——和对手打个招呼吧！", "chat_off": "无法发送——与对手的连接已断开"});
+Object.assign(I18N.ja,{"chat_h": "チャット", "chat_ph": "メッセージを入力…", "chat_send": "送信", "chat_empty": "まだメッセージがありません。相手にあいさつしましょう！", "chat_off": "送信できません。相手との接続が切れています"});
+Object.assign(I18N.th,{"chat_h": "แชต", "chat_ph": "พิมพ์ข้อความ…", "chat_send": "ส่ง", "chat_empty": "ยังไม่มีข้อความ — ทักทายคู่แข่งสิ!", "chat_off": "ส่งไม่ได้ — ขาดการเชื่อมต่อกับคู่แข่ง"});
+let LANG='en';try{const sv=localStorage.ci_lang;if(sv&&I18N[sv])LANG=sv}catch(e){}
+const tr=(k,...a)=>{let x=I18N[LANG][k];if(x===undefined)x=I18N.en[k];if(x===undefined)x=k;a.forEach((v,i)=>x=x.split('{'+i+'}').join(v));return x};
+
 
 function ENGINE(){const isW=p=>p<'a',inb=(r,c)=>r>=0&&r<8&&c>=0&&c<8;
 /* ---------- Chess rules ---------- */
@@ -406,13 +443,13 @@ function fxCapture(R,C,cap){const v=V[cap.toLowerCase()],{x,y,s}=sqC(R,C),cw=isW
  ring(x,y,cw?'#fff':'#14101f',s*(1+v*.35));ring(x,y,'#f4b942',s*(1.6+v*.4),90);ring(x,y,cw?'#ffe28a':'#f4b942',s*(2.2+v*.45),200);
  burst(x,y,24+v*16,cols,260+v*45);burst(x,y,14+v*6,['#f4b942','#ffe28a'],420+v*40);ghost(cap,x,y);shake(v>=9?1.7:v>=5?1.2:.7);sfx.cap(v);
  if(v>=5)flash(cw?'#fff3c4':'#f4b942',v>=9?.45:.25);
- if(v>=9)banner('ราชินีถูกกำจัด!','เพชฌฆาตลงดาบ','sm',1500);else if(v==5)banner('ป้อมพังทลาย!','','sm',1100)}
+ if(v>=9)banner(tr('b_queen'),tr('b_queen_s'),'sm',1500);else if(v==5)banner(tr('b_rook'),'','sm',1100)}
 function fxPromo(R,C,pc){const{x,y,s}=sqC(R,C),el=boardEl.children[R*8+C].querySelector('.p');
  if(el)el.animate([{transform:'rotateY(0) scale(.3)',filter:'brightness(5)'},{transform:'rotateY(900deg) scale(1.7)',filter:'brightness(2.2)',offset:.7},{transform:'none',filter:'none'}],{duration:1000,easing:'ease-out'});
  pillar(x,y,s*1.1);[0,150,300].forEach((d,i)=>ring(x,y,i==1?'#fff':'#f4b942',s*(2+i),d));
  burst(x,y,90,['#fff','#f4b942','#ffe28a'],340,-40);shake(.8);flash('#f4b942',.3);sfx.pro();
- banner('เลื่อนขั้น!',`เบี้ยกลายเป็น ${glyph(pc)}`,'',1700)}
-function fxCheck(kr,kc){const{x,y,s}=sqC(kr,kc);flash('#ff4d5e',.3);ring(x,y,'#ff4d5e',s*2.2);shake(.5);sfx.chk();banner('เช็ค!','','red sm',800)}
+ banner(tr('b_promo'),tr('b_promo_s',glyph(pc)),'',1700)}
+function fxCheck(kr,kc){const{x,y,s}=sqC(kr,kc);flash('#ff4d5e',.3);ring(x,y,'#ff4d5e',s*2.2);shake(.5);sfx.chk();banner(tr('b_check'),'','red sm',800)}
 function shatter(r,c,p){const{x,y,s}=sqC(r,c),el=SQ[r][c].querySelector('.p');if(el)el.style.visibility='hidden';
  const N=4,cls=isW(p)?'w':'b',g=glyph(p);
  for(let i=0;i<N;i++)for(let j=0;j<N;j++)for(let t=0;t<2;t++){
@@ -430,9 +467,9 @@ function insuff(b){const l=[];for(let i=0;i<8;i++)for(let j=0;j<8;j++){const p=b
  if(!l.length)return true;if(l.length==1)return l[0][0]=='b'||l[0][0]=='n';return l.every(x=>x[0]=='b'&&x[1]==l[0][1])}
 function fxDraw(why){flash('#9fb4d0',.35);tone(440,.5,'sine',.12);tone(330,.7,'sine',.12,.25);
  for(const k of['K','k']){const q=findK(S.b,k=='K'),{x,y,s}=sqC(q[0],q[1]);ring(x,y,'#cfe0ff',s*2.2);burst(x,y,50,['#cfe0ff','#fff','#8aa4c8'],200,60)}
- const b=banner('เสมอ',why,'sm');const btn=document.createElement('button');btn.textContent='เล่นอีกครั้ง';btn.onclick=()=>net.on?rematch():newGame();b.append(btn)}
+ const b=banner(tr('draw'),I18N.en[why]?tr(why):why,'sm');const btn=document.createElement('button');btn.textContent=tr('playagain');btn.onclick=()=>net.on?rematch():newGame();b.append(btn)}
 function turnBanner(){document.querySelectorAll('.turn').forEach(e=>e.remove());if(S.over)return;const w=S.turn=='w',d=document.createElement('div');
- d.className='turn '+(w?'w':'b');d.innerHTML=`<b>เทิร์นของ ${w?'ขาว':'ดำ'}</b>`+(wp?`<i>ผู้เล่น ${w?wp:3-wp}</i>`:vs?`<i>${w?'ตาของคุณ':'คอมพิวเตอร์'}</i>`:'');
+ d.className='turn '+(w?'w':'b');d.innerHTML=`<b>${tr(w?'turn_w':'turn_b')}</b>`+(wp?`<i>${tr('pl_n',w?wp:3-wp)}</i>`:vs?`<i>${tr(w?'yourturn':'cpu')}</i>`:'');
  document.body.append(d);setTimeout(()=>d.remove(),1400);tone(w?660:440,.14,'triangle',.08);tone(w?880:550,.2,'triangle',.06,.1)}
 function clearFx(){document.querySelectorAll('.turn').forEach(e=>e.remove());T.forEach(t=>{clearTimeout(t);clearInterval(t)});T.length=0;P=[];document.querySelectorAll('.banner,.pillar,.flash,.ghost').forEach(e=>e.remove())}
 
@@ -440,27 +477,27 @@ function clearFx(){document.querySelectorAll('.turn').forEach(e=>e.remove());T.f
 const net={on:false,host:false,color:'w',peer:null,conn:null};
 const SQ=[];let S,sel=null,busy=false,hist=[],vs=2,aiTok=0,wp=0,tTok=0,startTurn='w';
 const fresh=()=>({b:['rnbqkbnr','pppppppp',...Array(4).fill(null).map(()=>'        '),'PPPPPPPP','RNBQKBNR'].map(r=>r.split('').map(x=>x==' '?null:x)),st:{cs:'KQkq',ep:null},turn:'w',last:null,capW:[],capB:[],over:false,mate:false,hm:0,pos:[],dr:null,mv:[]});
-for(let r=0;r<8;r++){SQ[r]=[];for(let c=0;c<8;c++){const d=document.createElement('div');d.onclick=()=>click(r,c);boardEl.append(d);SQ[r][c]=d}}
-function render(){const mvs=sel?sel.mv:[],w=S.turn=='w',ck=!S.over||S.mate?inCheck(S.b,w):false,kw=ck?findK(S.b,w):null;
+for(let r=0;r<8;r++){SQ[r]=[];for(let c=0;c<8;c++){const d=document.createElement('div');d.dataset.r=r;d.dataset.c=c;d.onclick=()=>click(r,c);boardEl.append(d);SQ[r][c]=d}}
+function render(){chatSync();const mvs=sel?sel.mv:[],w=S.turn=='w',ck=!S.over||S.mate?inCheck(S.b,w):false,kw=ck?findK(S.b,w):null;
  for(let r=0;r<8;r++)for(let c=0;c<8;c++){const e=SQ[r][c],p=S.b[r][c];let cl='sq '+((r+c)%2?'d':'l');
   if(sel&&sel.r==r&&sel.c==c)cl+=' sel';
   if(S.last&&S.last.some(x=>x[0]==r&&x[1]==c))cl+=' last';
   const m=mvs.find(x=>x[0]==r&&x[1]==c);if(m)cl+=(p||m[2]=='ep')?' cap':' mv';
   if(kw&&kw[0]==r&&kw[1]==c)cl+=' chk';
   e.className=cl;
-  e.innerHTML=((flipped()?c==7:c==0)?`<u>${8-r}</u>`:'')+((flipped()?r==0:r==7)?`<s>${'abcdefgh'[c]}</s>`:'')+(p?`<span class="p ${isW(p)?'w':'b'}">${glyph(p)}</span>`:'')}
+  const h=((flipped()?c==7:c==0)?`<u>${8-r}</u>`:'')+((flipped()?r==0:r==7)?`<s>${'abcdefgh'[c]}</s>`:'')+(p?`<span class="p ${isW(p)?'w':'b'}">${glyph(p)}</span>`:'');if(e.innerHTML!==h)e.innerHTML=h}
  const t=$('turn');t.className=(w?'':'b ')+(ck?'c':'');
- t.querySelector('span').textContent=S.mate?`รุกฆาต! ${w?'ดำ':'ขาว'}ชนะ`:S.over?'เสมอ':(w?'ตาขาว':'ตาดำ')+(wp?` (ผู้เล่น ${w?wp:3-wp})`:'')+(net.on&&!S.over?(S.turn==net.color?' · ตาคุณ':' · รอคู่แข่ง'):'')+(ck?' · ถูกเช็ค!':'');
+ t.querySelector('span').textContent=S.mate?tr('mate',tr(w?'black':'white')):S.over?tr('draw'):tr(w?'turn_w':'turn_b')+(wp?' ('+tr('pl_n',w?wp:3-wp)+')':'')+(net.on&&!S.over?(S.turn==net.color?tr('yourt'):tr('wait_opp')):'')+(ck?tr('incheck'):'');
  const tray=(a)=>a.slice().sort((x,y)=>V[y.toLowerCase()]-V[x.toLowerCase()]).map(p=>`<span class="${isW(p)?'w':'b'}">${glyph(p)}</span>`).join('');
  $('capTop').innerHTML=tray(S.capW);$('capBot').innerHTML=tray(S.capB);mlist()}
 const sqn=(r,c)=>'abcdefgh'[c]+(8-r);
 function mlist(){const el=$('ml'),L=S.mv||[],k=L.length+JSON.stringify(L[L.length-1]||0);if(el.dataset.k==k)return;el.dataset.k=k;
  el.innerHTML=L.length?L.map((m,i)=>{const w=isW(m.p);return(w?`<span class="n">${Math.floor(i/2)+1}.</span>`:'')+`<span class="m${i==L.length-1?' last':''}"><span class="g ${w?'w':'b'}">${glyph(m.p)}</span>${sqn(...m.f)}${m.x?'×':'→'}${sqn(...m.t)}`
-  +(m.x?`<span class="g ${w?'b':'w'}">${glyph(m.x)}</span>`:'')+(m.pr?`=<span class="g ${w?'w':'b'}">${glyph(m.pr)}</span>`:'')+(m.cs?`<small>${m.cs==1?'O-O':'O-O-O'}</small>`:'')+(m.k||'')+'</span>'}).join(''):'<span class="e">ยังไม่มีการเดิน — เดินหมากแล้วจะแสดงตรงนี้</span>';
+  +(m.x?`<span class="g ${w?'b':'w'}">${glyph(m.x)}</span>`:'')+(m.pr?`=<span class="g ${w?'w':'b'}">${glyph(m.pr)}</span>`:'')+(m.cs?`<small>${m.cs==1?'O-O':'O-O-O'}</small>`:'')+(m.k||'')+'</span>'}).join(''):'<span class="e">'+tr('mlempty')+'</span>';
  el.scrollLeft=el.scrollWidth}
 function slide(r,c,R,C){const el=SQ[R][C].querySelector('.p');if(!el)return;const s=(flipped()?-1:1)*boardEl.getBoundingClientRect().width/8;
  el.style.zIndex=9;el.animate([{transform:`translate(${(c-C)*s}px,${(r-R)*s}px) scale(1.2)`},{transform:'none'}],{duration:220,easing:'cubic-bezier(.3,.7,.3,1)'})}
-function click(r,c){if(S.over||busy||(vs&&S.turn=='b')||(net.on&&(!net.conn||S.turn!=net.color)))return;const p=S.b[r][c];
+function click(r,c){if(performance.now()<suppressUntil||!canMoveNow())return;const p=S.b[r][c];
  if(sel){const m=sel.mv.find(x=>x[0]==r&&x[1]==c);
   if(m){const pc=S.b[sel.r][sel.c],fr=sel.r,fc=sel.c;
    if(pc.toLowerCase()=='p'&&(r==0||r==7))return askPromo(fr,fc,m);
@@ -473,11 +510,11 @@ function exec(r,c,m,pr){if(net.on&&!rcv&&net.conn)net.conn.send({t:'mv',r,c,m,pr
  S.b=x.b;S.st=x.st;S.turn=w?'b':'w';S.last=[[r,c],[m[0],m[1]]];sel=null;
  if(x.cap)(w?S.capW:S.capB).push(x.cap);
  const chk=inCheck(S.b,!w),has=anyMoves(S.b,S.st,!w);
- if(!has){S.over=true;S.mate=chk;if(!chk)S.dr='ไม่มีทางเดินที่ถูกกติกา (Stalemate)'}
+ if(!has){S.over=true;S.mate=chk;if(!chk)S.dr='dr_stale'}
  else{S.hm=(x.cap||pc.toLowerCase()=='p')?0:S.hm+1;const key=JSON.stringify([S.b,S.turn,S.st]);S.pos.push(key);
-  if(insuff(S.b))S.dr='เหลือหมากน้อยเกินกว่าจะรุกฆาตได้ (King vs King)';
-  else if(S.hm>=100)S.dr='เดินครบ 50 ตาโดยไม่กินหมากและไม่เดินเบี้ย';
-  else if(S.pos.filter(k=>k==key).length>=3)S.dr='ตำแหน่งเดิมซ้ำครบ 3 ครั้ง';
+  if(insuff(S.b))S.dr='dr_insuf';
+  else if(S.hm>=100)S.dr='dr_50';
+  else if(S.pos.filter(k=>k==key).length>=3)S.dr='dr_rep';
   if(S.dr)S.over=true}
  if(net.on&&net.host)setTimeout(saveHost,0);S.mv.push({p:pc,f:[r,c],t:[m[0],m[1]],x:x.cap||'',pr:x.promoted||'',cs:m[2]=='cs'?1:m[2]=='cq'?2:0,k:S.mate?'#':chk?'+':''});
  render();slide(r,c,m[0],m[1]);
@@ -499,42 +536,42 @@ function think(L,cb){const id=++reqId,b=S.b,st=S.st,sync=()=>cb(bestMove(b,st,L)
  WK.onmessage=e=>{if(e.data.id!==id)return;WK.onmessage=WK.onerror=null;cb(e.data)};
  WK.onerror=ev=>{if(ev.preventDefault)ev.preventDefault();WK.onmessage=WK.onerror=null;WK=null;sync()};
  WK.postMessage({b,st,L,id})}
-function aiTurn(delay){busy=true;const tok=aiTok;$('turn').querySelector('span').textContent='คอมกำลังคิด…';
+function aiTurn(delay){busy=true;const tok=aiTok;$('turn').querySelector('span').textContent=tr('thinking');
  setTimeout(()=>{if(tok!=aiTok)return;think(vs,o=>{if(tok!=aiTok)return;busy=false;exec(o.r,o.c,o.m,'Q')})},delay)}
 
 /* ---------- Online: private room (PeerJS / WebRTC) ---------- */
 const flipped=()=>net.on&&net.color=='b';let rcv=false,odTok=0,odIv=0,rtTok=0;
 const AL='ABCDEFGHJKLMNPQRSTUVWXYZ23456789',rcode=()=>Array.from({length:5},()=>AL[Math.random()*AL.length|0]).join('');
 function toast(t,ms){const e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(toast.t);if(ms)toast.t=setTimeout(()=>e.hidden=true,ms)}
-function netClose(){odTok++;rtTok++;net.gtok=null;clearInterval(odIv);$('dice').classList.remove('on');const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
-function showO(s,m){$('ohome').hidden=s!='home';$('ocode').hidden=s!='host';$('ojoinbox').hidden=s!='join';
- $('omsg').textContent=m||{home:'สร้างห้องแล้วส่งรหัสให้เพื่อน หรือใส่รหัสห้องของเพื่อน',host:'ส่งรหัสนี้ให้เพื่อน แล้วรอเพื่อนเข้าห้อง…',join:'ใส่รหัสห้อง 5 ตัวอักษร'}[s]||''}
-function openOnline(){netClose();$('menu').classList.remove('on');$('online').classList.add('on');showO('home');const o=loadHost();$('ores').hidden=!o;if(o)$('ores').textContent='ต่อห้องเดิม '+o.code}
+function netClose(){chatReset();odTok++;rtTok++;net.gtok=null;clearInterval(odIv);$('dice').classList.remove('on');const c=net.conn,p=net.peer;net.conn=net.peer=null;net.on=false;boardEl.classList.remove('flip');$('toast').hidden=true;try{c&&c.close()}catch(e){}try{p&&p.destroy()}catch(e){}}
+function showO(s,m,a){$('ohome').hidden=s!='home';$('ocode').hidden=s!='host';$('ojoinbox').hidden=s!='join';
+ $('omsg').textContent=tr(m||{home:'o_home',host:'o_host',join:'o_join'}[s]||'',a)}
+function openOnline(){netClose();$('menu').classList.remove('on');$('online').classList.add('on');showO('home');const o=loadHost();$('ores').hidden=!o;if(o)$('ores').textContent=tr('resume',o.code)}
 function startOnline(color,first){net.on=true;net.color=color;startTurn=first||'w';wp=0;$('mode').value=0;boardEl.classList.toggle('flip',color=='b');
  $('online').classList.remove('on');$('menu').classList.remove('on');newGame();saveHost();
- if(net.conn)toast('คุณเล่นฝ่าย'+(color=='w'?'ขาว ♔':'ดำ ♚')+(first==color?' · เดินก่อน':' · คู่แข่งเดินก่อน'),3500)}
-function rematch(){if(!net.conn)return toast('คู่แข่งออกจากห้องแล้ว — กด "เมนูหลัก"',3500);if(net.host)hostStart(net.color=='w'?'b':'w');else net.conn.send({t:'again'})}
+ if(net.conn)toast(tr(first==color?'youplay_first':'youplay_second',tr(color=='w'?'white_g':'black_g')),3500)}
+function rematch(){if(!net.conn)return toast(tr('rematch_gone'),3500);if(net.host)hostStart(net.color=='w'?'b':'w');else net.conn.send({t:'again'})}
 function hostStart(hc){if(!net.conn)return;let a,b;do{a=d6();b=d6()}while(a==b);
  net.conn.send({t:'start',you:hc=='w'?'b':'w',d:[a,b]});onlineDice(hc,a,b)}
 function onlineDice(color,mine,opp){const tk=++odTok;clearInterval(odIv);net.on=true;net.color=color;
- const oc=color=='w'?'b':'w',nm=c=>c=='w'?'ขาว ♔':'ดำ ♚';
+ const oc=color=='w'?'b':'w',nm=c=>tr(c=='w'?'white_g':'black_g');
  clearFx();$('online').classList.remove('on');$('menu').classList.remove('on');$('res').classList.remove('on');
- $('pl1').querySelector('span').textContent='คุณ · '+nm(color);$('pl2').querySelector('span').textContent='คู่แข่ง · '+nm(oc);
+ $('pl1').querySelector('span').textContent=tr('you_p',nm(color));$('pl2').querySelector('span').textContent=tr('opp_p',nm(oc));
  $('pl1').className=$('pl2').className='pl';$('roll').hidden=$('go').hidden=$('dback').hidden=true;
- $('dmsg').textContent='กำลังทอย…';$('dice').classList.add('on');face('d1',1);face('d2',1);
+ $('dmsg').textContent=tr('rolling');$('dice').classList.add('on');face('d1',1);face('d2',1);
  $('d1').classList.add('roll');$('d2').classList.add('roll');
  let n=0;odIv=setInterval(()=>{if(tk!=odTok)return clearInterval(odIv);face('d1',d6());face('d2',d6());tone(rnd(250,600),.04,'square',.04);
   if(++n>=14){clearInterval(odIv);face('d1',mine);face('d2',opp);$('d1').classList.remove('roll');$('d2').classList.remove('roll');
    const win=mine>opp,first=win?color:oc;$('pl'+(win?1:2)).classList.add('win');
-   $('dmsg').innerHTML=`${win?'คุณ':'คู่แข่ง'}ทอยได้แต้มมากกว่า (${mine} ต่อ ${opp})<br>${win?'คุณเดินก่อน':'คู่แข่งเดินก่อน'} · คุณเล่นฝ่าย${color=='w'?'ขาว':'ดำ'}`;
+   $('dmsg').innerHTML=tr(win?'o_win':'o_lose',mine,opp,tr(color=='w'?'white':'black'));
    tone(500,.2,'triangle',.1);if(win)celebrate();
    setTimeout(()=>{if(tk!=odTok)return;$('dice').classList.remove('on');$('dback').hidden=false;startOnline(color,first)},2400)}},90)}
 function onLost(c){if(net.conn!==c)return;net.conn=null;if(!net.on)return;
- if(net.host)toast('คู่แข่งหลุดการเชื่อมต่อ — กำลังรอเชื่อมต่อใหม่… (หรือกด "เมนูหลัก" เพื่อออก)',0);else guestRetry()}
+ if(net.host)toast(tr('lost_host'),0);else guestRetry()}
 function guestRetry(){const tk=++rtTok,t0=Date.now();
  const attempt=()=>{if(tk!=rtTok||!net.on||(net.conn&&net.conn.open))return;
-  if(Date.now()-t0>60000)return toast('เชื่อมต่อใหม่ไม่สำเร็จ — กด "เมนูหลัก" เพื่อออก',0);
-  toast('หลุดการเชื่อมต่อ กำลังเชื่อมต่อใหม่…',0);
+  if(Date.now()-t0>60000)return toast(tr('retry_fail'),0);
+  toast(tr('reconnecting'),0);
   try{net.peer&&net.peer.destroy()}catch(e){}
   const p=net.peer=new Peer();let done=false;
   const retry=()=>{if(done||tk!=rtTok)return;done=true;clearTimeout(to);if(net.conn&&!net.conn.open)net.conn=null;setTimeout(attempt,1500)},to=setTimeout(retry,8000);
@@ -547,8 +584,9 @@ function wire(c){net.conn=c;c.__t=Date.now();
  c.on('open',()=>{c.__t=Date.now();if(!net.host)c.send({t:'hi',tok:net.tok})});
  c.on('data',d=>{if(!d||net.conn!==c)return;c.__t=Date.now();
   if(d.t=='start'&&!net.host)onlineDice(d.you,d.d[1],d.d[0]);
-  else if(d.t=='sync'&&!net.host&&d.S&&Array.isArray(d.S.b)){if(!net.on){net.on=true;net.color=d.you||'b';vs=0;wp=0;$('mode').value=0;boardEl.classList.toggle('flip',net.color=='b');$('online').classList.remove('on');$('menu').classList.remove('on');$('dice').classList.remove('on')}S=d.S;sel=null;busy=false;clearFx();render();toast('เชื่อมต่อใหม่แล้ว ✓ ซิงก์เกมเรียบร้อย',2500)}
+  else if(d.t=='sync'&&!net.host&&d.S&&Array.isArray(d.S.b)){if(!net.on){net.on=true;net.color=d.you||'b';vs=0;wp=0;$('mode').value=0;boardEl.classList.toggle('flip',net.color=='b');$('online').classList.remove('on');$('menu').classList.remove('on');$('dice').classList.remove('on')}S=d.S;sel=null;busy=false;clearFx();render();toast(tr('synced'),2500)}
   else if(d.t=='again'&&net.host&&net.on)hostStart(net.color=='w'?'b':'w');
+  else if(d.t=='chat'&&net.on&&typeof d.m=='string'){const m=d.m.trim().slice(0,200);if(m)addChat(false,m)}
   else if(d.t=='mv'&&net.on&&!S.over&&S.turn!=net.color&&Array.isArray(d.m)){
    const pc=S.b[d.r]&&S.b[d.r][d.c];if(!pc||isW(pc)!=(S.turn=='w'))return;
    const m=legal(S.b,S.st,d.r,d.c).find(x=>x[0]==d.m[0]&&x[1]==d.m[1]&&x[2]==d.m[2]);
@@ -561,49 +599,49 @@ const loadHost=()=>{try{const o=JSON.parse(localStorage.ci_host);return o&&o.S&&
 const tokFor=c=>{const mk=()=>rcode()+rcode()+rcode();try{const k='ci_tok_'+c;let v=localStorage[k];if(!v)localStorage[k]=v=mk();return v}catch(e){return mk()}};
 function hostWire(p,unavail){
  p.on('disconnected',()=>{if(net.peer===p&&!p.destroyed)setTimeout(()=>{try{p.reconnect()}catch(e){}},1500)});
- p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')unavail();else if(net.on){if(p.disconnected)setTimeout(()=>{try{p.reconnect()}catch(e){}},2000)}else{netClose();showO('home','เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง')}});
+ p.on('error',e=>{if(net.peer!==p)return;if(e.type=='unavailable-id')unavail();else if(net.on){if(p.disconnected)setTimeout(()=>{try{p.reconnect()}catch(e){}},2000)}else{netClose();showO('home','o_srv')}});
  p.on('connection',c=>c.on('data',d=>{if(!d||d.t!='hi'||c.__ok||net.peer!==p)return;
   if(!net.gtok){if(net.conn){c.close();return}net.gtok=d.tok;c.__ok=1;wire(c);hostStart(Math.random()<.5?'w':'b')}
   else if(d.tok===net.gtok){c.__ok=1;const o=net.conn;net.conn=null;try{o&&o.close()}catch(e){}wire(c);
-   if(net.on){c.send({t:'sync',S,you:net.color=='w'?'b':'w'});toast('คู่แข่งกลับมาแล้ว ✓',2000)}}
+   if(net.on){c.send({t:'sync',S,you:net.color=='w'?'b':'w'});toast(tr('opp_back'),2000)}}
   else c.close()}))}
-function hostRoom(){if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
+function hostRoom(){if(typeof Peer=='undefined')return showO('home','o_noload');
  netClose();net.host=true;const code=rcode(),p=net.peer=new Peer('chessimpact-'+code);net.code=code;
  p.on('open',()=>{$('code').textContent=code;showO('host')});
  hostWire(p,hostRoom)}
-function resumeHost(){const o=loadHost();if(!o)return showO('home','ไม่พบห้องเดิม');
- if(typeof Peer=='undefined')return showO('home','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();net.host=true;net.code=o.code;net.gtok=o.gtok;showO('wait','กำลังกู้ห้อง '+o.code+'…');const t0=Date.now(),tk=++rtTok;
+function resumeHost(){const o=loadHost();if(!o)return showO('home','o_noroom');
+ if(typeof Peer=='undefined')return showO('home','o_noload');
+ netClose();net.host=true;net.code=o.code;net.gtok=o.gtok;showO('wait','o_restoring',o.code);const t0=Date.now(),tk=++rtTok;
  const go=()=>{if(tk!=rtTok)return;const p=net.peer=new Peer('chessimpact-'+o.code);
   p.on('open',()=>{if(net.peer!==p)return;net.on=true;net.color=o.color;S=o.S;vs=0;wp=0;$('mode').value=0;sel=null;busy=false;clearFx();
    boardEl.classList.toggle('flip',o.color=='b');$('online').classList.remove('on');$('menu').classList.remove('on');render();
-   toast('กู้ห้อง '+o.code+' แล้ว — รอคู่แข่งต่อกลับเข้ามา…',0)});
-  hostWire(p,()=>{if(Date.now()-t0>45000){netClose();showO('home','กู้ห้องไม่สำเร็จ ลองใหม่อีกครั้ง');return}try{p.destroy()}catch(e){}net.peer=null;setTimeout(go,3000)})};
+   toast(tr('resumed',o.code),0)});
+  hostWire(p,()=>{if(Date.now()-t0>45000){netClose();showO('home','o_restorefail');return}try{p.destroy()}catch(e){}net.peer=null;setTimeout(go,3000)})};
  go()}
-function joinRoom(){const code=$('jin').value.trim().toUpperCase();if(code.length!=5)return showO('join','รหัสห้องต้องมี 5 ตัวอักษร');
- if(typeof Peer=='undefined')return showO('join','โหลดระบบออนไลน์ไม่สำเร็จ ตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
- netClose();net.host=false;net.code=code;net.tok=tokFor(code);showO('wait','กำลังเชื่อมต่อ…');const p=net.peer=new Peer();
- const fail=m=>{if(net.peer!==p||net.on)return;clearTimeout(to);netClose();showO('join',m)},to=setTimeout(()=>fail('เชื่อมต่อไม่สำเร็จ ตรวจสอบรหัสห้องแล้วลองใหม่'),12000);
- p.on('error',e=>fail(e.type=='peer-unavailable'?'ไม่พบห้องนี้ ตรวจสอบรหัสอีกครั้ง':'เชื่อมต่อเซิร์ฟเวอร์ไม่ได้ ลองใหม่อีกครั้ง'));
+function joinRoom(){const code=$('jin').value.trim().toUpperCase();if(code.length!=5)return showO('join','o_len');
+ if(typeof Peer=='undefined')return showO('join','o_noload');
+ netClose();net.host=false;net.code=code;net.tok=tokFor(code);showO('wait','o_conn');const p=net.peer=new Peer();
+ const fail=m=>{if(net.peer!==p||net.on)return;clearTimeout(to);netClose();showO('join',m)},to=setTimeout(()=>fail('o_failconn'),12000);
+ p.on('error',e=>fail(e.type=='peer-unavailable'?'o_notfound':'o_srv'));
  p.on('open',()=>{const c=p.connect('chessimpact-'+code,{reliable:true});wire(c);c.on('open',()=>clearTimeout(to))})}
 $('ocreate').onclick=hostRoom;$('ores').onclick=resumeHost;
 $('ojoin').onclick=()=>{showO('join');$('jin').focus()};
 $('jgo').onclick=joinRoom;
 $('jin').onkeydown=e=>{if(e.key=='Enter')joinRoom()};
-$('ocopy').onclick=()=>{try{navigator.clipboard.writeText($('code').textContent);toast('คัดลอกรหัสแล้ว',1500)}catch(e){}};
+$('ocopy').onclick=()=>{try{navigator.clipboard.writeText($('code').textContent);toast(tr('copied'),1500)}catch(e){}};
 $('oback').onclick=()=>{$('online').classList.remove('on');showMenu()};
 
 const PIP={1:[4],2:[0,8],3:[0,4,8],4:[0,2,6,8],5:[0,2,4,6,8],6:[0,2,3,5,6,8]};
 const face=(id,n)=>$(id).innerHTML=Array.from({length:9},(_,i)=>`<i${PIP[n].includes(i)?' class="on"':''}></i>`).join('');
 const d6=()=>1+Math.random()*6|0;let rolling=false,winner=0;
-function openDice(){rolling=false;$('pl1').querySelector('span').textContent='ผู้เล่น 1 · ขาว ♔';$('pl2').querySelector('span').textContent='ผู้เล่น 2 · ดำ ♚';$('dback').hidden=false;$('dice').classList.add('on');face('d1',1);face('d2',1);$('pl1').className=$('pl2').className='pl';
- $('dmsg').textContent='ผู้เล่น 1 เป็นฝ่ายขาว · ผู้เล่น 2 เป็นฝ่ายดำ — ใครทอยได้แต้มมากกว่าจะได้เดินก่อน';$('roll').hidden=false;$('go').hidden=true}
+function openDice(){rolling=false;$('pl1').querySelector('span').textContent=tr('p1w');$('pl2').querySelector('span').textContent=tr('p2b');$('dback').hidden=false;$('dice').classList.add('on');face('d1',1);face('d2',1);$('pl1').className=$('pl2').className='pl';
+ $('dmsg').textContent=tr('dice_msg');$('roll').hidden=false;$('go').hidden=true}
 function roll(){if(rolling||!$('dice').classList.contains('on'))return;rolling=true;$('roll').hidden=true;$('go').hidden=true;
- $('pl1').className=$('pl2').className='pl';$('dmsg').textContent='กำลังทอย…';$('d1').classList.add('roll');$('d2').classList.add('roll');
+ $('pl1').className=$('pl2').className='pl';$('dmsg').textContent=tr('rolling');$('d1').classList.add('roll');$('d2').classList.add('roll');
  let n=0;const iv=setInterval(()=>{face('d1',d6());face('d2',d6());tone(rnd(250,600),.04,'square',.04);if(++n>=14){clearInterval(iv);finish()}},90)}
 function finish(){const a=d6(),b=d6();face('d1',a);face('d2',b);$('d1').classList.remove('roll');$('d2').classList.remove('roll');rolling=false;
- if(a==b){$('dmsg').textContent=`ทั้งสองคนทอยได้ ${a} เท่ากัน! ทอยใหม่…`;tone(300,.3,'sawtooth',.08);setTimeout(roll,1400)}
- else{winner=a>b?1:2;$('pl'+winner).classList.add('win');$('dmsg').innerHTML=`ผู้เล่น ${winner} ได้แต้มมากกว่า (${a} ต่อ ${b})<br>เล่นฝ่าย${winner==1?'ขาว':'ดำ'} และเดินก่อน`;rolling=true;tone(500,.2,'triangle',.1);setTimeout(()=>showResult(a,b),1000)}}
+ if(a==b){$('dmsg').textContent=tr('tie',a);tone(300,.3,'sawtooth',.08);setTimeout(roll,1400)}
+ else{winner=a>b?1:2;$('pl'+winner).classList.add('win');$('dmsg').innerHTML=tr('wins_roll',winner,a,b,tr(winner==1?'white':'black'));rolling=true;tone(500,.2,'triangle',.1);setTimeout(()=>showResult(a,b),1000)}}
 let resMode='dice';
 function celebrate(){const x=innerWidth/2,y=innerHeight*.42;flash('#f4b942',.55);
  [0,150,320,520].forEach((d,i)=>ring(x,y,i%2?'#fff':'#f4b942',innerWidth*(.25+i*.14),d));
@@ -612,13 +650,13 @@ function celebrate(){const x=innerWidth/2,y=innerHeight*.42;flash('#f4b942',.55)
  T.push(setInterval(rocket,420));const c=setInterval(confetti,40);T.push(c);T.push(setTimeout(()=>clearInterval(c),9000))}
 function showResult(a,b){const w=a>b?1:2;resMode='dice';
  $('rcrown').innerHTML='';$('rsc').innerHTML=`<span class="${a>b?'w':'l'}">${a}</span><span class="c">:</span><span class="${b>a?'w':'l'}">${b}</span>`;
- $('rwho').textContent=`ผู้เล่น ${w} ได้เริ่มก่อน!`;$('rsub').textContent=`ผู้เล่น ${w} เล่นฝ่าย${w==1?'ขาว ♔':'ดำ ♚'} และเดินก่อน`;$('rtap').textContent='กดเพื่อเริ่มเกม';$('rview').hidden=$('rmenu').hidden=true;
+ $('rwho').textContent=tr('first_h',w);$('rsub').textContent=tr('first_sub',w,tr(w==1?'white_g':'black_g'));$('rtap').textContent=tr('tapstart');$('rview').hidden=$('rmenu').hidden=true;
  $('res').classList.add('on');sfx.mate();celebrate()}
-function showEnd(winW){resMode='end';const side=winW?'ขาว':'ดำ';
+function showEnd(winW){resMode='end';const side=tr(winW?'white':'black');
  $('rcrown').innerHTML=`<span class="${winW?'w':'b'}">♚\uFE0E</span>`;
- $('rsc').innerHTML='<span class="w" style="font-size:.4em;letter-spacing:.06em">CHECKMATE</span>';
- $('rwho').textContent=net.on?(winW==(net.color=='w')?'คุณชนะ!':'คู่แข่งชนะ!'):wp?`ผู้เล่น ${winW?wp:3-wp} ชนะ!`:vs?(winW?'คุณชนะ!':'คอมพิวเตอร์ชนะ!'):`ฝ่าย${side}ชนะ!`;
- $('rsub').textContent=`ฝ่าย${side} · รุกฆาตสำเร็จ`;$('rtap').textContent='เล่นอีกครั้ง';$('rview').hidden=$('rmenu').hidden=false;
+ $('rsc').innerHTML='<span class="w" style="font-size:.4em;letter-spacing:.06em">'+tr('ckm')+'</span>';
+ $('rwho').textContent=net.on?tr(winW==(net.color=='w')?'you_win':'opp_win'):wp?tr('pwin',winW?wp:3-wp):vs?tr(winW?'you_win':'cpu_win'):tr('side_win',side);
+ $('rsub').textContent=tr('end_sub',side);$('rtap').textContent=tr('playagain');$('rview').hidden=$('rmenu').hidden=false;
  $('res').classList.add('on');sfx.pro();celebrate();flash('#fff',.5);shake(1.2)}
 $('res').onclick=e=>{if(resMode=='end'){if(e.target.closest('#rtap')){if(net.on)return rematch();$('res').classList.remove('on');newGame()}return}
  rolling=false;wp=1;startTurn=winner==1?'w':'b';clearFx();$('res').classList.remove('on');$('dice').classList.remove('on');$('mode').value=0;newGame()};
@@ -634,10 +672,10 @@ $('menu').onclick=e=>{const b=e.target.closest('button');if(!b)return;const a=b.
  else if(a=='0'){$('menu').classList.remove('on');openDice()}
  else{wp=0;$('mode').value=a;$('menu').classList.remove('on');newGame()}};
 $('home').onclick=()=>{clearHost();showMenu()};
-$('newg').onclick=()=>{if(net.on)return toast('ออนไลน์: กดเล่นอีกครั้งหลังจบเกม',2500);newGame()};
+$('newg').onclick=()=>{if(net.on)return toast(tr('newg_online'),2500);newGame()};
 $('undo').onclick=()=>{if(net.on||busy||!hist.length)return;aiTok++;clearFx();S=JSON.parse(hist.pop());if(vs&&S.turn=='b'&&hist.length)S=JSON.parse(hist.pop());sel=null;render();const tk=++tTok;setTimeout(()=>{if(tk==tTok)turnBanner()},250)};
 $('mode').onchange=newGame;
-$('snd').onclick=e=>{mute=!mute;e.target.textContent='เสียง: '+(mute?'ปิด':'เปิด')};
+$('snd').onclick=e=>{mute=!mute;e.target.textContent=tr(mute?'snd_off':'snd_on')};
 (()=>{const L=[],dot=(x,y,k)=>L.push(`radial-gradient(circle calc(var(--s)*${k}) at ${x}% ${y}%,#fff3c4 0,#f0c75e 45%,#a87420 75%,#0000 82%)`);
  [[50,4.6],[50,95.4],[4.6,50],[95.4,50]].forEach(a=>dot(a[0],a[1],.02));
  [27,73].forEach(t=>{dot(t,4.6,.012);dot(t,95.4,.012);dot(4.6,t,.012);dot(95.4,t,.012)});
@@ -650,6 +688,77 @@ $('snd').onclick=e=>{mute=!mute;e.target.textContent='เสียง: '+(mute?'
  const pr=new Image();let n=0;
  pr.onload=()=>{const src=pr.src,l=document.createElement('link');l.rel='icon';l.href=src;document.head.append(l);};
  pr.onerror=()=>{if(n++==0)pr.src='icon.jpg'};pr.src='icon.png'})();
+/* ---------- Drag & drop (works alongside click-to-move) ---------- */
+let drag=null,suppressUntil=0;
+const canMoveNow=()=>!(S.over||busy||(vs&&S.turn=='b')||(net.on&&(!net.conn||S.turn!=net.color)));
+const sqAt=(x,y)=>{const t=document.elementFromPoint(x,y),q=t&&t.closest?t.closest('.sq'):null;return q&&boardEl.contains(q)?q:null};
+function dragEnd(){removeEventListener('pointermove',dragMove);removeEventListener('pointerup',dragUp);removeEventListener('pointercancel',dragCancel);
+ const d=drag;drag=null;if(!d)return null;
+ if(d.g)d.g.remove();if(d.h)d.h.classList.remove('hov');
+ if(d.on){const o=SQ[d.r][d.c].querySelector('.p');if(o)o.style.opacity=''}
+ return d}
+function dragMove(e){if(!drag||e.pointerId!==drag.id)return;
+ if(!drag.on){
+  if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)<6)return;
+  if(!canMoveNow()){dragEnd();return}
+  const{r,c}=drag,p=S.b[r][c];
+  sel={r,c,mv:legal(S.b,S.st,r,c)};tone(700,.05,'triangle',.06);render();
+  const o=SQ[r][c].querySelector('.p');if(o)o.style.opacity='.25';
+  const sz=boardEl.getBoundingClientRect().width/8,g=document.createElement('div');
+  g.className='dg';g.innerHTML=`<span class="p ${isW(p)?'w':'b'}" style="font-size:${sz*.78}px">${glyph(p)}</span>`;
+  document.body.append(g);drag.g=g;drag.on=true}
+ drag.g.style.transform=`translate(${e.clientX}px,${e.clientY}px) translate(-50%,-50%) scale(1.2)`;
+ const q=sqAt(e.clientX,e.clientY),n=q&&sel.mv.some(x=>x[0]==+q.dataset.r&&x[1]==+q.dataset.c)?q:null;
+ if(n!==drag.h){if(drag.h)drag.h.classList.remove('hov');if(n)n.classList.add('hov');drag.h=n}}
+function dragUp(e){if(!drag||e.pointerId!==drag.id)return;
+ const d=dragEnd();if(!d||!d.on)return;
+ suppressUntil=performance.now()+150;
+ const q=sqAt(e.clientX,e.clientY);
+ if(q&&sel&&sel.r==d.r&&sel.c==d.c&&canMoveNow()){
+  const r=+q.dataset.r,c=+q.dataset.c,m=sel.mv.find(x=>x[0]==r&&x[1]==c),pc=S.b[d.r][d.c];
+  if(m){if(pc&&pc.toLowerCase()=='p'&&(r==0||r==7))return askPromo(d.r,d.c,m);return exec(d.r,d.c,m,'Q')}}
+ render()}
+function dragCancel(e){if(!drag||e.pointerId!==drag.id)return;const d=dragEnd();if(d&&d.on)render()}
+boardEl.addEventListener('pointerdown',e=>{
+ if(drag||!e.isPrimary||(e.pointerType=='mouse'&&e.button!==0)||!canMoveNow())return;
+ const q=e.target.closest&&e.target.closest('.sq');if(!q)return;
+ const r=+q.dataset.r,c=+q.dataset.c,p=S.b[r][c];
+ if(!p||isW(p)!=(S.turn=='w'))return;
+ drag={r,c,x:e.clientX,y:e.clientY,id:e.pointerId,on:false,g:null,h:null};
+ addEventListener('pointermove',dragMove);addEventListener('pointerup',dragUp);addEventListener('pointercancel',dragCancel)});
+
+/* ---------- Online chat ---------- */
+const chat={m:[],u:0};
+function chatRender(){const el=$('chatlog');el.textContent='';
+ if(!chat.m.length){const d=document.createElement('div');d.className='e';d.textContent=tr('chat_empty');el.append(d)}
+ else chat.m.forEach(x=>{const d=document.createElement('div');d.className='m '+(x.me?'me':'th');d.textContent=x.t;el.append(d)});
+ el.scrollTop=el.scrollHeight}
+function chatBadge(){const b=$('chatbadge');b.hidden=!chat.u;b.textContent=chat.u>9?'9+':chat.u}
+function chatOpen(){$('chat').hidden=false;chat.u=0;chatBadge();chatRender();if(!matchMedia('(pointer:coarse)').matches)$('chatin').focus()}
+function chatClose(){$('chat').hidden=true}
+function chatReset(){chat.m=[];chat.u=0;$('chatbtn').hidden=true;chatBadge();chatRender();chatClose()}
+function chatSync(){const on=!!net.on;$('chatbtn').hidden=!on;if(!on&&!$('chat').hidden)chatClose()}
+function addChat(me,t){chat.m.push({me,t});if(chat.m.length>100)chat.m.shift();
+ if($('chat').hidden&&!me){chat.u++;chatBadge();tone(880,.08,'sine',.07);tone(1175,.1,'sine',.06,.08)}
+ chatRender()}
+function chatSend(){const i=$('chatin'),v=i.value.trim().slice(0,200);if(!v)return;
+ if(!net.on||!net.conn||!net.conn.open){toast(tr('chat_off'),2200);return}
+ try{net.conn.send({t:'chat',m:v})}catch(e){toast(tr('chat_off'),2200);return}
+ addChat(true,v);i.value='';i.focus()}
+$('chatbtn').onclick=()=>$('chat').hidden?chatOpen():chatClose();
+$('chatx').onclick=chatClose;
+$('chatsend').onclick=chatSend;
+$('chatin').onkeydown=e=>{if(e.key=='Enter'&&!e.isComposing&&e.keyCode!==229){e.preventDefault();chatSend()}else if(e.key=='Escape')chatClose()};
+
+function applyLang(re){const d=document;d.documentElement.lang={en:'en',th:'th',zh:'zh-CN',ja:'ja'}[LANG];d.title=tr('title');
+ d.querySelectorAll('[data-i18n]').forEach(e=>e.textContent=tr(e.dataset.i18n));
+ d.querySelectorAll('[data-i18n-aria]').forEach(e=>e.setAttribute('aria-label',tr(e.dataset.i18nAria)));
+ d.querySelectorAll('[data-i18n-ph]').forEach(e=>e.setAttribute('placeholder',tr(e.dataset.i18nPh)));
+ $('snd').textContent=tr(mute?'snd_off':'snd_on');$('lang').value=$('lang2').value=LANG;
+ if(re){const o=loadHost();if(o)$('ores').textContent=tr('resume',o.code);$('ml').dataset.k='';chatRender();render()}}
+function setLang(v){if(!I18N[v])return;LANG=v;try{localStorage.ci_lang=v}catch(e){}applyLang(true)}
+$('lang').onchange=$('lang2').onchange=e=>setLang(e.target.value);
+applyLang(false);
 newGame();
 </script>
 </body>
