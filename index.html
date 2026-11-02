@@ -539,7 +539,7 @@ const sfx={
 /* ---------- BGM: random track from asset/bgm/ + mini player ---------- */
 const BGM_DIR='asset/bgm/',BGM_EXT=/\.(mp3|ogg|oga|wav|m4a|aac|flac|opus|webm)$/i;
 /* Optional manual list (used if the server has no directory listing / playlist.json), e.g. ['theme1.mp3','battle.ogg'] */
-const BGM_FILES=[];
+const BGM_FILES=['ヨルシカ Yorushika アポリア【Jazz Cover】.mp3','ヨルシカ Yorushika 夜行【Jazz Cover】.mp3','米津玄師 Kenshi Yonezu KICK BACK【Jazz Cover】.mp3'];
 const bgm={a:null,q:[],hist:[],last:'',ok:false,user:false,vol:.32,duck:0,dt:0};
 async function bgmScan(){const found=new Set();
  try{const r=await fetch(BGM_DIR,{cache:'no-store'});
