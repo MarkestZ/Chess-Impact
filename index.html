@@ -476,7 +476,7 @@ return{isW,inb,gen,make,findK,inCheck,legal,anyMoves,bestMove}}
 const{isW,inb,gen,make,findK,inCheck,legal,anyMoves,bestMove}=ENGINE();
 
 /* ---------- Sound ---------- */
-let AC,mute=false,MB,NB,REV;
+let AC,mute=false,MB,NB,REV,SH;
 function actx(){
  if(!AC){
   AC=new(window.AudioContext||window.webkitAudioContext)();
@@ -487,6 +487,7 @@ function actx(){
   const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
   const n=AC.sampleRate*1.8|0,ir=AC.createBuffer(2,n,AC.sampleRate);
   for(let c=0;c<2;c++){const x=ir.getChannelData(c);for(let i=0;i<n;i++)x[i]=(Math.random()*2-1)*Math.pow(1-i/n,3)}
+  SH=new Float32Array(1024);for(let i=0;i<1024;i++){const x=i/511.5-1;SH[i]=Math.tanh(x*2.5)/Math.tanh(2.5)}
   REV=AC.createConvolver();REV.buffer=ir;
   const rg=AC.createGain();rg.gain.value=.55;REV.connect(rg);rg.connect(MB)}
  if(AC.state=='suspended')AC.resume();
@@ -506,9 +507,31 @@ function noise(d,v=.2,t0=0,type='bandpass',f=1000,f2,q=1,rev=0){if(mute)return;
   g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.003);g.gain.exponentialRampToValueAtTime(.001,t+d);
   s.connect(fl);fl.connect(g);g.connect(MB);if(rev){const r=a.createGain();r.gain.value=rev;g.connect(r);r.connect(REV)}
   s.start(t,Math.random()*1.5);s.stop(t+d+.02)}catch(e){}}
+/* saturated pitch-drop punch: the waveshaper adds harmonics so the low thump still "hits" on phone speakers */
+function thud(f,f2,d,v=.5,t0=0,drive=3,rev=0){if(mute)return;
+ try{const a=actx(),t=a.currentTime+t0,o=a.createOscillator(),pre=a.createGain(),sh=a.createWaveShaper(),g=a.createGain();
+  o.type='sine';o.frequency.setValueAtTime(f,t);o.frequency.exponentialRampToValueAtTime(Math.max(1,f2),t+d*.6);
+  pre.gain.setValueAtTime(0,t);pre.gain.linearRampToValueAtTime(drive,t+.002);pre.gain.exponentialRampToValueAtTime(.001,t+d);
+  sh.curve=SH;sh.oversample='2x';g.gain.value=v;
+  o.connect(pre);pre.connect(sh);sh.connect(g);g.connect(MB);if(rev){const r=a.createGain();r.gain.value=rev;g.connect(r);r.connect(REV)}
+  o.start(t);o.stop(t+d+.02)}catch(e){}}
+/* brass-like voice: 3 detuned saws through a swelling low-pass */
+function brass(f,d,v=.12,t0=0,rev=0,att=.05){if(mute)return;
+ try{const a=actx(),t=a.currentTime+t0,fl=a.createBiquadFilter(),g=a.createGain();
+  fl.type='lowpass';fl.Q.value=1.2;fl.frequency.setValueAtTime(f*1.5,t);
+  fl.frequency.exponentialRampToValueAtTime(Math.min(f*7,9000),t+att+.08);fl.frequency.exponentialRampToValueAtTime(f*2.5,t+d);
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v*.4,t+att);g.gain.setValueAtTime(v*.4,t+Math.max(att,d*.45));g.gain.exponentialRampToValueAtTime(.001,t+d);
+  [-7,0,7].forEach(c=>{const o=a.createOscillator();o.type='sawtooth';o.frequency.setValueAtTime(f,t);o.detune.value=c;o.connect(fl);o.start(t);o.stop(t+d+.02)});
+  fl.connect(g);g.connect(MB);if(rev){const r=a.createGain();r.gain.value=rev;g.connect(r);r.connect(REV)}}catch(e){}}
 const sfx={
  /* wooden clack of a piece landing on the board */
- mv:()=>{noise(.05,.55,0,'bandpass',1900,1000,3);tone(240,.09,'triangle',.28,0,110);tone(95,.12,'sine',.3,0,55);noise(.04,.12,0,'highpass',5000)},
+ mv:()=>{const r=.94+Math.random()*.12;
+  noise(.012,.55,0,'highpass',3500,undefined,.7);
+  noise(.07,.8,0,'bandpass',1100*r,520*r,3.5);
+  thud(210*r,85*r,.13,.55,0,2.2);
+  thud(120*r,46*r,.2,.85,0,3.2);
+  tone(330*r,.07,'triangle',.1,0,260*r,.2);tone(520*r,.05,'sine',.06,0,430*r,.15);
+  noise(.18,.14,.01,'lowpass',1400,300,.7,.3)},
  sel:()=>{tone(900,.05,'triangle',.08,0,1400);noise(.02,.1,0,'highpass',4500)},
  ui:()=>{tone(1200,.05,'triangle',.06,0,1700);noise(.02,.05,0,'highpass',5000)},
  tick:()=>{noise(.03,.25,0,'bandpass',2200,1400,3);tone(180+Math.random()*140,.05,'triangle',.12,0,100)},
@@ -531,15 +554,26 @@ const sfx={
   [523,659,784,1047,1319].forEach((f,i)=>{tone(f,.35,'triangle',.14,.1+i*.07,undefined,.4);tone(f*2,.3,'sine',.05,.1+i*.07,undefined,.6)});
   tone(160,.45,'sine',.65,.45,40);noise(.6,.4,.45,'lowpass',5000,300,.7,.5);tone(1568,.8,'sine',.06,.45,undefined,.8);bgmDuck(.55,1200)},
  /* checkmate: huge sub boom + crash + victory chord */
- mate:()=>{tone(45,1.6,'sine',.9,0,16);noise(.12,.9,0,'bandpass',2800,800,1);noise(1.6,.5,.01,'lowpass',2500,70,.7,.9);
-  tone(220,.5,'sawtooth',.2,0,40);tone(1000,1.2,'sine',.05,.02,990,.9);
-  [392,523,659,784,1047].forEach((f,i)=>tone(f,.9,'triangle',.12,.3+i*.12,undefined,.5));
-  [196,262].forEach(f=>tone(f,1.2,'sawtooth',.07,.35,f*.99,.4));bgmDuck(.85,2200)}};
+ mate:()=>{thud(62,22,1.9,1,0,3.5,.3);thud(170,55,.4,.9,0,4);
+  noise(.09,.95,0,'bandpass',3000,900,1);
+  noise(2.2,.55,.01,'lowpass',3200,80,.7,.95);noise(1.4,.3,.02,'highpass',5500,3000,.5,.8);
+  brass(55,1.5,.22,.02,.5,.04);brass(82.4,1.5,.18,.02,.5,.04);brass(110,1.3,.12,.03,.5,.04);
+  [1046,1568,2349].forEach((f,i)=>tone(f,1.6,'sine',.05,.02+i*.04,undefined,.9));
+  bgmDuck(.9,2600)},
+ /* victory fanfare: timpani roll -> brass pickup -> huge hit + full major chord + cymbal + bell shimmer */
+ win:()=>{const T=.48;
+  [0,.09,.18,.27,.36].forEach((t,i)=>thud(110,60,.18,.35+i*.1,t,2.5,.2));
+  [[261.6,0],[329.6,.15],[392,.3]].forEach(([f,t])=>{brass(f,.2,.16,t,.3,.02);brass(f*2,.2,.08,t,.3,.02)});
+  thud(75,28,1.4,1,T,3.2,.3);thud(150,60,.3,.7,T,3.5);
+  noise(.1,.6,T,'bandpass',3500,1200,1);noise(2,.45,T,'highpass',4500,2500,.5,.9);noise(1.8,.35,T,'lowpass',3000,200,.7,.8);
+  [130.8,196,261.6,329.6,392,523.3].forEach((f,i)=>brass(f,1.8,.16-i*.01,T,.6,.06));
+  [1046.5,1318.5,1568,2093].forEach((f,i)=>tone(f,1.8,'sine',.05,T+.03+i*.06,undefined,.9));
+  bgmDuck(.8,3200)}};
 
 /* ---------- BGM: random track from asset/bgm/ + mini player ---------- */
 const BGM_DIR='asset/bgm/',BGM_EXT=/\.(mp3|ogg|oga|wav|m4a|aac|flac|opus|webm)$/i;
 /* Optional manual list (used if the server has no directory listing / playlist.json), e.g. ['theme1.mp3','battle.ogg'] */
-const BGM_FILES=['ヨルシカ Yorushika アポリア【Jazz Cover】.mp3','ヨルシカ Yorushika 夜行【Jazz Cover】.mp3','米津玄師 Kenshi Yonezu KICK BACK【Jazz Cover】.mp3'];
+const BGM_FILES=[];
 const bgm={a:null,q:[],hist:[],last:'',ok:false,user:false,vol:.32,duck:0,dt:0};
 async function bgmScan(){const found=new Set();
  try{const r=await fetch(BGM_DIR,{cache:'no-store'});
@@ -845,13 +879,13 @@ function celebrate(){const x=innerWidth/2,y=innerHeight*.42;flash('#f4b942',.55)
 function showResult(a,b){const w=a>b?1:2;resMode='dice';
  $('rcrown').innerHTML='';$('rsc').innerHTML=`<span class="${a>b?'w':'l'}">${a}</span><span class="c">:</span><span class="${b>a?'w':'l'}">${b}</span>`;
  $('rwho').textContent=tr('first_h',w);$('rsub').textContent=tr('first_sub',w,tr(w==1?'white_g':'black_g'));$('rtap').textContent=tr('tapstart');$('rview').hidden=$('rmenu').hidden=true;
- $('res').classList.add('on');sfx.mate();celebrate()}
+ $('res').classList.add('on');sfx.win();celebrate()}
 function showEnd(winW){resMode='end';const side=tr(winW?'white':'black');
  $('rcrown').innerHTML=`<span class="${winW?'w':'b'}">♚\uFE0E</span>`;
  $('rsc').innerHTML='<span class="w" style="font-size:.4em;letter-spacing:.06em">'+tr('ckm')+'</span>';
  $('rwho').textContent=net.on?tr(winW==(net.color=='w')?'you_win':'opp_win'):wp?tr('pwin',winW?wp:3-wp):vs?tr(winW?'you_win':'cpu_win'):tr('side_win',side);
  $('rsub').textContent=tr('end_sub',side);$('rtap').textContent=tr('playagain');$('rview').hidden=$('rmenu').hidden=false;
- $('res').classList.add('on');sfx.pro();celebrate();flash('#fff',.5);shake(1.2)}
+ $('res').classList.add('on');sfx.win();celebrate();flash('#fff',.5);shake(1.2)}
 $('res').onclick=e=>{if(resMode=='end'){if(e.target.closest('#rtap')){if(net.on)return rematch();$('res').classList.remove('on');newGame()}return}
  rolling=false;wp=1;startTurn=winner==1?'w':'b';clearFx();$('res').classList.remove('on');$('dice').classList.remove('on');$('mode').value=0;newGame()};
 $('rview').onclick=e=>{e.stopPropagation();$('res').classList.remove('on')};
